@@ -1,0 +1,42 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect your VanMoof account",
+        "description": "Log in with your VanMoof account. The integration will fetch your SA5/A5 bikes, generate bike certificates, and create separate Home Assistant devices.\n\nLast error: {error_detail}"
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to VanMoof.",
+      "invalid_auth": "VanMoof rejected the login credentials or token.",
+      "no_supported_bikes": "The account connected successfully, but no supported SA5/A5/S6 bikes were found."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "VanMoof options"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "battery": { "name": "Battery" },
+      "module_battery": { "name": "Module battery" },
+      "distance": { "name": "Distance" },
+      "power_level": { "name": "Power level" },
+      "connection_state": { "name": "Connection state" },
+      "last_seen": { "name": "Last seen" },
+      "light_mode": { "name": "Light mode" },
+      "firmware_info": { "name": "Firmware info" },
+      "errors": { "name": "Errors" }
+    },
+    "binary_sensor": {
+      "locked": { "name": "Locked" },
+      "in_range": { "name": "In range" }
+    },
+    "button": {
+      "refresh": { "name": "Refresh now" }
+    }
+  }
+}
