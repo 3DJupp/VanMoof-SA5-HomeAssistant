@@ -10,6 +10,7 @@ from typing import Any
 
 from bleak import BleakClient, BleakScanner
 from bleak.backends.device import BLEDevice
+from bleak_retry_connector import establish_connection
 
 from .const import (
     APP_CHAR_UUID,
@@ -133,15 +134,19 @@ class VanMoofBikeBleClient:
             if message is not None:
                 queue.put_nowait(message)
 
-        async with BleakClient(device, timeout=20.0) as client:
+        client = await establish_connection(
+            BleakClient, device, device.name or device.address
+        )
+        try:
             write_uuid = await self._async_authenticate_connection(
                 client, queue, notification_handler
             )
             await self._async_write_fragments(
                 client, write_uuid, build_subscribe_message(ALL_TOPICS)
             )
-
             topics = await self._async_collect_topics(queue, duration=5.0)
+        finally:
+            await client.disconnect()
 
         if Topic.BATTERY_LEVEL not in topics and Topic.LOCK_STATE not in topics:
             raise VanMoofBleError("Bike connected but did not return the expected topics")
@@ -176,12 +181,17 @@ class VanMoofBikeBleClient:
             if message is not None:
                 queue.put_nowait(message)
 
-        async with BleakClient(device, timeout=20.0) as client:
+        client = await establish_connection(
+            BleakClient, device, device.name or device.address
+        )
+        try:
             write_uuid = await self._async_authenticate_connection(
                 client, queue, notification_handler
             )
             await client.write_gatt_char(write_uuid, bytes.fromhex(command_hex), response=False)
             await asyncio.sleep(0.5)
+        finally:
+            await client.disconnect()
 
     async def _async_authenticate_connection(
         self,
@@ -270,6 +280,42 @@ def _map_distance(value: object | None) -> float | None:
     if not isinstance(value, int | float):
         return None
     return round((float(value) / 100.0), 1)
+
+
+def _map_power(value: object | None) -> str | None:
+    if isinstance(value, int):
+        return str(value)
+    return None
+
+
+def _map_light(value: object | None) -> str | None:
+    if value == 0:
+        return "off"
+    if value == 1:
+        return "on"
+    if value == 2:
+        return "halo"
+    if value == 3:
+        return "auto"
+    return None
+
+
+def _map_speed_limit(value: object | None) -> str | None:
+    if value == 0:
+        return "25 km/h"
+    if value == 1:
+        return "32 km/h"
+    if value == 2:
+        return "24 km/h"
+    return None
+
+
+def _stringify_value(value: object | None) -> str | None:
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return value
+    return json.dumps(value, sort_keys=True) 100.0), 1)
 
 
 def _map_power(value: object | None) -> str | None:
