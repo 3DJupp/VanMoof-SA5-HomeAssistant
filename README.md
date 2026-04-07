@@ -37,6 +37,7 @@ Open issues or feature requests on the repository issue tracker.
 
 ## Special thanks!
 - [Victor Lagerfors](https://github.com/victorlagerfors/vanmoof-s5-homey)
+- [j-o-a-c-h-i](https://github.com/j-o-a-c-h-i)
 
 
 ## License
