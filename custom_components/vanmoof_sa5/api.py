@@ -78,6 +78,23 @@ class VanMoofApiClient:
 
     async def async_initialize(self) -> dict[str, VanMoofBike]:
         """Authenticate, fetch bikes, and ensure certificates exist."""
+        try:
+            await self._async_resolve_tokens()
+            bikes = await self._async_fetch_bikes()
+            await self.async_ensure_certificates(bikes.values())
+            self._bikes = bikes
+            return self._bikes
+        except VanMoofApiError as err:
+            _LOGGER.warning(
+                "VanMoof API error during initialization (%s), "
+                "clearing tokens and retrying with fresh authentication",
+                err,
+            )
+            self._auth_token = None
+            self._app_token = None
+            self._refresh_token = None
+
+        # Retry once with fresh credentials
         await self._async_resolve_tokens()
         bikes = await self._async_fetch_bikes()
         await self.async_ensure_certificates(bikes.values())
