@@ -315,40 +315,4 @@ def _stringify_value(value: object | None) -> str | None:
         return None
     if isinstance(value, str):
         return value
-    return json.dumps(value, sort_keys=True) 100.0), 1)
-
-
-def _map_power(value: object | None) -> str | None:
-    if isinstance(value, int):
-        return str(value)
-    return None
-
-
-def _map_light(value: object | None) -> str | None:
-    if value == 0:
-        return "off"
-    if value == 1:
-        return "on"
-    if value == 2:
-        return "halo"
-    if value == 3:
-        return "auto"
-    return None
-
-
-def _map_speed_limit(value: object | None) -> str | None:
-    if value == 0:
-        return "25 km/h"
-    if value == 1:
-        return "32 km/h"
-    if value == 2:
-        return "24 km/h"
-    return None
-
-
-def _stringify_value(value: object | None) -> str | None:
-    if value is None:
-        return None
-    if isinstance(value, str):
-        return value
     return json.dumps(value, sort_keys=True)
