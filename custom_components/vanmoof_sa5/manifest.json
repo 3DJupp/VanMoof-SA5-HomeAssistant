@@ -17,5 +17,6 @@
   "iot_class": "local_polling",
   "loggers": [
     "custom_components.vanmoof_sa5"
-  ]
+  ],
+  "logo": "logo.png"
 }
