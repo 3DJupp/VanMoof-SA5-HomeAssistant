@@ -8,7 +8,7 @@ from enum import IntEnum
 
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
-from .cbor import decode_cbor
+from .cbor import decode_cbor, encode_cbor
 
 
 class PayloadType(IntEnum):
@@ -153,6 +153,12 @@ def sign_challenge(challenge: bytes, private_key_b64: str) -> bytes:
     private_key = Ed25519PrivateKey.from_private_bytes(private_bytes)
     signature = private_key.sign(challenge)
     return bytes([PayloadType.AUTH_CHALLENGE]) + signature
+
+
+def build_param_update_message(topic: Topic, value: int) -> bytes:
+    """Build a PARAM_UPDATE message to set a topic value on the bike."""
+    topic_bytes = int(topic).to_bytes(2, "big")
+    return bytes([PayloadType.PARAM_UPDATE]) + topic_bytes + encode_cbor(value)
 
 
 def build_subscribe_message(topics: list[int]) -> bytes:

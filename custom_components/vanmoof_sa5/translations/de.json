@@ -37,14 +37,27 @@
       "last_seen": { "name": "Zuletzt gesehen" },
       "light_mode": { "name": "Lichtmodus" },
       "firmware_info": { "name": "Firmware-Info" },
-      "errors": { "name": "Fehler" }
+      "errors": { "name": "Fehler" },
+      "speed": { "name": "Geschwindigkeit" },
+      "calories": { "name": "Kalorien" },
+      "speed_limit": { "name": "Tempolimit" }
     },
     "binary_sensor": {
       "locked": { "name": "Gesperrt" },
       "in_range": { "name": "In Reichweite" }
     },
     "button": {
-      "refresh": { "name": "Jetzt aktualisieren" }
+      "refresh": { "name": "Jetzt aktualisieren" },
+      "find_my": { "name": "Fahrrad finden" },
+      "ring_bell": { "name": "Klingel läuten" }
+    },
+    "lock": {
+      "lock": { "name": "Schloss" }
+    },
+    "select": {
+      "speed_limit": { "name": "Tempolimit" },
+      "light_mode_select": { "name": "Lichtmodus" },
+      "power_level_select": { "name": "Unterstützungsstufe" }
     }
   }
 }

@@ -16,6 +16,7 @@ from .api import VanMoofApiClient, VanMoofApiError
 from .ble import VanMoofBikeBleClient, VanMoofBleError
 from .const import CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL, DOMAIN
 from .models import BikeState, VanMoofBike
+from .protocol import Topic
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -93,4 +94,12 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
 
     async def async_manual_refresh(self) -> None:
         """Run an immediate refresh."""
+        await self.async_request_refresh()
+
+    async def async_set_bike_topic(
+        self, bike_id: str, topic: Topic, value: int
+    ) -> None:
+        """Send a PARAM_UPDATE to the specified bike and trigger a state refresh."""
+        bike = self.data.bikes[bike_id]
+        await VanMoofBikeBleClient(bike).async_set_topic(topic, value)
         await self.async_request_refresh()

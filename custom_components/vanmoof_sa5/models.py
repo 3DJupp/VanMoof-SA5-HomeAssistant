@@ -45,6 +45,8 @@ class BikeState:
     power_level: str | None = None
     light_mode: str | None = None
     speed_limit: str | None = None
+    speed_kmh: int | None = None
+    calories: int | None = None
     connection_state: str = "disconnected"
     last_seen: datetime | None = None
     firmware_info: str | None = None

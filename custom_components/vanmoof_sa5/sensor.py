@@ -12,7 +12,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EntityCategory, UnitOfLength, PERCENTAGE
+from homeassistant.const import EntityCategory, UnitOfLength, UnitOfSpeed, PERCENTAGE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -84,6 +84,26 @@ SENSORS: tuple[VanMoofSensorDescription, ...] = (
         translation_key="errors",
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda state: state.errors,
+    ),
+    VanMoofSensorDescription(
+        key="speed",
+        translation_key="speed",
+        native_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
+        device_class=SensorDeviceClass.SPEED,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda state: state.speed_kmh,
+    ),
+    VanMoofSensorDescription(
+        key="calories",
+        translation_key="calories",
+        native_unit_of_measurement="kcal",
+        state_class=SensorStateClass.TOTAL_INCREASING,
+        value_fn=lambda state: state.calories,
+    ),
+    VanMoofSensorDescription(
+        key="speed_limit",
+        translation_key="speed_limit",
+        value_fn=lambda state: state.speed_limit,
     ),
 )
 

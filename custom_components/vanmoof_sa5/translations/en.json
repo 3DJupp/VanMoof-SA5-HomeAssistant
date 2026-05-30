@@ -37,14 +37,27 @@
       "last_seen": { "name": "Last seen" },
       "light_mode": { "name": "Light mode" },
       "firmware_info": { "name": "Firmware info" },
-      "errors": { "name": "Errors" }
+      "errors": { "name": "Errors" },
+      "speed": { "name": "Speed" },
+      "calories": { "name": "Calories" },
+      "speed_limit": { "name": "Speed limit" }
     },
     "binary_sensor": {
       "locked": { "name": "Locked" },
       "in_range": { "name": "In range" }
     },
     "button": {
-      "refresh": { "name": "Refresh now" }
+      "refresh": { "name": "Refresh now" },
+      "find_my": { "name": "Find my bike" },
+      "ring_bell": { "name": "Ring bell" }
+    },
+    "lock": {
+      "lock": { "name": "Lock" }
+    },
+    "select": {
+      "speed_limit": { "name": "Speed limit" },
+      "light_mode_select": { "name": "Light mode" },
+      "power_level_select": { "name": "Power level" }
     }
   }
 }

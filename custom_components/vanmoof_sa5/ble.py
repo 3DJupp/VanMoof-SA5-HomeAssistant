@@ -29,6 +29,7 @@ from .protocol import (
     TopicMessage,
     build_certificate_message,
     build_fragments,
+    build_param_update_message,
     build_subscribe_message,
     sign_challenge,
 )
@@ -161,11 +162,65 @@ class VanMoofBikeBleClient:
             power_level=_map_power(topics.get(Topic.POWER_LEVEL)),
             light_mode=_map_light(topics.get(Topic.LIGHT_MODE)),
             speed_limit=_map_speed_limit(topics.get(97)),
+            speed_kmh=_coerce_int(topics.get(Topic.SPEED)),
+            calories=_coerce_int(topics.get(Topic.CALORIES)),
             connection_state="connected",
             firmware_info=_stringify_value(topics.get(Topic.FW_INFO)),
             errors=_stringify_value(topics.get(Topic.ERRORS)),
             raw_topics=topics,
         )
+
+    async def async_set_topic(self, topic: Topic, value: int) -> str | None:
+        """Authenticate and set a topic value on the bike."""
+        candidates = await self._async_discover_candidates()
+        if not candidates:
+            raise VanMoofBleError("No nearby VanMoof BLE advertisements were found")
+
+        last_error: Exception | None = None
+        for candidate in candidates:
+            try:
+                await self._async_set_topic_on_candidate(candidate, topic, value)
+                return candidate.address
+            except Exception as err:  # noqa: BLE001
+                last_error = err
+                _LOGGER.debug(
+                    "Set-topic candidate %s failed for bike %s",
+                    candidate.address,
+                    self._bike.frame_number,
+                    exc_info=True,
+                )
+
+        raise VanMoofBleError(
+            f"Could not set topic on bike {self._bike.frame_number}: {last_error}"
+        )
+
+    async def _async_set_topic_on_candidate(
+        self, device: BLEDevice, topic: Topic, value: int
+    ) -> None:
+        if not self._bike.certificate or not self._bike.private_key:
+            raise VanMoofBleError("Missing certificate or private key for bike")
+
+        queue: asyncio.Queue[Any] = asyncio.Queue()
+        reassembler = FragmentReassembler()
+
+        def notification_handler(_: int, payload: bytearray) -> None:
+            message = reassembler.feed(bytes(payload))
+            if message is not None:
+                queue.put_nowait(message)
+
+        client = await establish_connection(
+            BleakClient, device, device.name or device.address
+        )
+        try:
+            write_uuid = await self._async_authenticate_connection(
+                client, queue, notification_handler
+            )
+            await self._async_write_fragments(
+                client, write_uuid, build_param_update_message(topic, value)
+            )
+            await asyncio.sleep(0.5)
+        finally:
+            await client.disconnect()
 
     async def _async_send_command_to_candidate(
         self, device: BLEDevice, command_hex: str
