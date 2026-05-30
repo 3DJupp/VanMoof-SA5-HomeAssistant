@@ -37,6 +37,12 @@ BINARY_SENSORS: tuple[VanMoofBinarySensorDescription, ...] = (
         device_class=BinarySensorDeviceClass.PRESENCE,
         value_fn=lambda state: state.in_range,
     ),
+    VanMoofBinarySensorDescription(
+        key="lock_state_alt",
+        translation_key="lock_state_alt",
+        device_class=BinarySensorDeviceClass.LOCK,
+        value_fn=lambda state: state.lock_state_alt,
+    ),
 )
 
 

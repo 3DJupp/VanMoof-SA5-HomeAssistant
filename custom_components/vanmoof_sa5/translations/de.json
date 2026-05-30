@@ -40,11 +40,13 @@
       "errors": { "name": "Fehler" },
       "speed": { "name": "Geschwindigkeit" },
       "calories": { "name": "Kalorien" },
-      "speed_limit": { "name": "Tempolimit" }
+      "speed_limit": { "name": "Tempolimit" },
+      "backup_code": { "name": "Sicherungscode" }
     },
     "binary_sensor": {
       "locked": { "name": "Gesperrt" },
-      "in_range": { "name": "In Reichweite" }
+      "in_range": { "name": "In Reichweite" },
+      "lock_state_alt": { "name": "Sekundärschloss" }
     },
     "button": {
       "refresh": { "name": "Jetzt aktualisieren" },
@@ -55,9 +57,13 @@
       "lock": { "name": "Schloss" }
     },
     "select": {
+      "bell_sound": { "name": "Klingelton" },
       "speed_limit": { "name": "Tempolimit" },
       "light_mode_select": { "name": "Lichtmodus" },
       "power_level_select": { "name": "Unterstützungsstufe" }
+    },
+    "switch": {
+      "alarm": { "name": "Alarm" }
     }
   }
 }

@@ -105,6 +105,12 @@ SENSORS: tuple[VanMoofSensorDescription, ...] = (
         translation_key="speed_limit",
         value_fn=lambda state: state.speed_limit,
     ),
+    VanMoofSensorDescription(
+        key="backup_code",
+        translation_key="backup_code",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda state: state.backup_code,
+    ),
 )
 
 

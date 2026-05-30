@@ -26,6 +26,13 @@ class VanMoofSelectDescription(SelectEntityDescription):
 
 SELECTS: tuple[VanMoofSelectDescription, ...] = (
     VanMoofSelectDescription(
+        key="bell_sound",
+        translation_key="bell_sound",
+        topic=Topic.BELL_SOUND,
+        options_map={"1": 1, "2": 2, "3": 3, "4": 4},
+        current_fn=lambda state: state.raw_topics.get(Topic.BELL_SOUND),
+    ),
+    VanMoofSelectDescription(
         key="speed_limit",
         translation_key="speed_limit",
         topic=Topic.GEAR,

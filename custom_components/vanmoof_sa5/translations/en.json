@@ -40,11 +40,13 @@
       "errors": { "name": "Errors" },
       "speed": { "name": "Speed" },
       "calories": { "name": "Calories" },
-      "speed_limit": { "name": "Speed limit" }
+      "speed_limit": { "name": "Speed limit" },
+      "backup_code": { "name": "Backup code" }
     },
     "binary_sensor": {
       "locked": { "name": "Locked" },
-      "in_range": { "name": "In range" }
+      "in_range": { "name": "In range" },
+      "lock_state_alt": { "name": "Secondary lock" }
     },
     "button": {
       "refresh": { "name": "Refresh now" },
@@ -55,9 +57,13 @@
       "lock": { "name": "Lock" }
     },
     "select": {
+      "bell_sound": { "name": "Bell sound" },
       "speed_limit": { "name": "Speed limit" },
       "light_mode_select": { "name": "Light mode" },
       "power_level_select": { "name": "Power level" }
+    },
+    "switch": {
+      "alarm": { "name": "Alarm" }
     }
   }
 }

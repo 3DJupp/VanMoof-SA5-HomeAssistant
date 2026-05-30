@@ -1,8 +1,8 @@
-"""Lock entity for VanMoof SA5."""
+"""Switch entities for VanMoof SA5."""
 
 from __future__ import annotations
 
-from homeassistant.components.lock import LockEntity
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -20,15 +20,15 @@ async def async_setup_entry(
 ) -> None:
     coordinator: VanMoofDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
     async_add_entities(
-        VanMoofLock(coordinator, bike_id)
+        VanMoofAlarmSwitch(coordinator, bike_id)
         for bike_id in coordinator.data.bikes
     )
 
 
-class VanMoofLock(VanMoofEntity, LockEntity):
-    """Controls the electronic lock of a VanMoof bike."""
+class VanMoofAlarmSwitch(VanMoofEntity, SwitchEntity):
+    """Enables or disables the VanMoof anti-theft alarm."""
 
-    _attr_translation_key = "lock"
+    _attr_translation_key = "alarm"
 
     def __init__(
         self,
@@ -36,22 +36,21 @@ class VanMoofLock(VanMoofEntity, LockEntity):
         bike_id: str,
     ) -> None:
         super().__init__(coordinator, bike_id)
-        self._attr_unique_id = f"{bike_id}_lock"
+        self._attr_unique_id = f"{bike_id}_alarm"
 
     @property
-    def is_locked(self) -> bool | None:
-        # BikeState.locked stores True=unlocked (inverted from protocol), so invert here
-        locked = self.bike_state.locked
-        if locked is None:
+    def is_on(self) -> bool | None:
+        state = self.bike_state.alarm_state
+        if state is None:
             return None
-        return not locked
+        return state != 0
 
     @property
     def available(self) -> bool:
         return self.bike_state.available
 
-    async def async_lock(self, **kwargs: object) -> None:
-        await self.coordinator.async_set_bike_topic(self._bike_id, Topic.LOCK_STATE, 3)
+    async def async_turn_on(self, **kwargs: object) -> None:
+        await self.coordinator.async_set_bike_topic(self._bike_id, Topic.ALARM, 1)
 
-    async def async_unlock(self, **kwargs: object) -> None:
-        await self.coordinator.async_set_bike_topic(self._bike_id, Topic.LOCK_STATE, 1)
+    async def async_turn_off(self, **kwargs: object) -> None:
+        await self.coordinator.async_set_bike_topic(self._bike_id, Topic.ALARM, 0)

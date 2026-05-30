@@ -47,6 +47,9 @@ class BikeState:
     speed_limit: str | None = None
     speed_kmh: int | None = None
     calories: int | None = None
+    alarm_state: int | None = None
+    backup_code: str | None = None
+    lock_state_alt: bool | None = None
     connection_state: str = "disconnected"
     last_seen: datetime | None = None
     firmware_info: str | None = None
