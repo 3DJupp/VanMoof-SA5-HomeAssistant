@@ -6,10 +6,33 @@ Home Assistant integration for the VanMoof S/A5 e-bike series. This custom integ
 
 ## Features
 
-- Battery sensor
-- Lock state, power level, light mode & speed limit
-- Total distance
-- BLE-based communication with automatic reconnection
+**Sensors**
+- Battery and module battery, total distance, bike state (off / standby / on), lock state
+- Region and speed limit, firmware version, firmware update available
+- Weekly ride statistics from the VanMoof cloud (rides, distance, average distance)
+
+**Controls**
+- `lock` entity: **unlock** the bike (the bike can only be locked with its own button)
+- Assist level (off, 1 to 4), light mode (on / off / auto), bell sound
+- Alarm, brake light mode, indicator light mode, riding display, start-up animation theme
+- Touch unlock (proximity unlock) with selectable distance
+
+**Connection**
+- Works with local Bluetooth adapters and ESPHome Bluetooth proxies through the Home Assistant Bluetooth stack
+- Every command connects, authenticates, applies the change and reads the new state back
+
+Not exposed on purpose: changing the region (this changes the legal speed limit), the backup code and firmware flashing.
+
+### Notes
+
+- The bike does not report the touch unlock setting. Home Assistant remembers the last value you set.
+- Ride statistics come from the VanMoof cloud and refresh every 6 hours. Their units are not documented by VanMoof; the raw summary is available as an attribute.
+- Protocol details: [docs/PROTOCOL.md](docs/PROTOCOL.md)
+- Only SA5/A5 bikes are supported. The S6 uses a different Bluetooth service.
+
+### Security
+
+Unlocking from Home Assistant is a physical security feature. Anyone who can call `lock.unlock` on your instance can unlock your bike, so restrict who can use that service and think twice before automating it on presence alone.
 
 ## Install via HACS
 
