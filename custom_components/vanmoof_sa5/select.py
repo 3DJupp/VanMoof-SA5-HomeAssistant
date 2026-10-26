@@ -21,6 +21,7 @@ from .protocol import (
     BELL_SOUNDS,
     LIGHT_MODES,
     POWER_LEVEL_OPTIONS,
+    REGIONS,
     RIDING_DISPLAY_MODES,
     TOUCH_UNLOCK_RSSI,
     BleWrite,
@@ -28,6 +29,7 @@ from .protocol import (
     write_bell_sound,
     write_light_mode,
     write_power_level,
+    write_region,
     write_riding_display,
 )
 
@@ -61,6 +63,17 @@ SELECTS: tuple[VanMoofSelectDescription, ...] = (
         options=list(BELL_SOUNDS.values()),
         value_fn=lambda state: state.bell_sound,
         write_fn=write_bell_sound,
+    ),
+    # Changes the legal speed limit (EU 25, US 32, Japan 24, offroad unrestricted).
+    # Disabled by default; enabling and using it is the owner's responsibility.
+    VanMoofSelectDescription(
+        key="region_select",
+        translation_key="region_select",
+        entity_category=EntityCategory.CONFIG,
+        entity_registry_enabled_default=False,
+        options=list(REGIONS.values()),
+        value_fn=lambda state: state.region,
+        write_fn=write_region,
     ),
     VanMoofSelectDescription(
         key="riding_display",

@@ -290,6 +290,14 @@ def write_bell_sound(sound: str) -> BleWrite:
     return BleWrite(WriteTopic.BELL_SOUND, reverse[sound], "bell_sound")
 
 
+def write_region(region: str) -> BleWrite:
+    """Set the region. This changes the legal speed limit of the bike."""
+    reverse = invert(REGIONS)
+    if region not in reverse:
+        raise ValueError(f"Invalid region: {region}")
+    return BleWrite(WriteTopic.REGION, reverse[region], "region")
+
+
 def write_alarm_mode(enabled: bool) -> BleWrite:
     """Enable or disable the alarm."""
     return BleWrite(WriteTopic.ALARM_MODE, bool(enabled), "alarm_mode")

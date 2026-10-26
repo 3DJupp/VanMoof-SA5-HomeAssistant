@@ -109,3 +109,13 @@ def test_parse_lock_state_notification():
 def test_packed_version():
     assert decode_packed_version((1 << 24) | (12 << 16) | 1234) == "1.12.1234"
     assert decode_packed_version("x") is None
+
+
+def test_region_write_matches_app():
+    from custom_components.vanmoof_sa5.protocol import write_region
+
+    # App: EU=0, US=1, JAPAN=2, OFFROAD=3 on write topic 98
+    for name, raw in {"eu": 0, "us": 1, "japan": 2, "offroad": 3}.items():
+        assert write_region(name).to_payload() == bytes([1, 0, 98, raw])
+    with pytest.raises(ValueError):
+        write_region("moon")

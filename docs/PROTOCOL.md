@@ -73,7 +73,7 @@ Application message: `[payload type][body]`
 | 124 | brake light mode | bool |
 | 126 | indicator light mode | bool |
 | 164 | touch unlock | map `{"rssi": int, "enabled": bool}` |
-| 98 | region | 0 EU, 1 US, 2 Japan, 3 offroad (not exposed by the integration) |
+| 98 | region | 0 EU, 1 US, 2 Japan, 3 offroad (disabled select, see README disclaimer) |
 | 105 | shifting points | 4 x int16 (not exposed) |
 | 117 | backup code | 3 x int16 (not exposed) |
 | 8208 | firmware update blocks | not implemented on purpose |

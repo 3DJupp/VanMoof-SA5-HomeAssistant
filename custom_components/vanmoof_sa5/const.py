@@ -16,6 +16,7 @@ CONF_APP_TOKEN = "app_token"
 CONF_REFRESH_TOKEN = "refresh_token"
 CONF_BIKES = "bikes"
 CONF_POLL_INTERVAL = "poll_interval"
+CONF_UNLOCK_CODE = "unlock_code"
 
 API_KEY = "fcb38d47-f14b-30cf-843b-26283f6a5819"
 API_BASE_URL = "https://api.vanmoof-api.com/v8"

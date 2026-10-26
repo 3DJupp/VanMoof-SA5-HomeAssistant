@@ -22,7 +22,11 @@
       "init": {
         "title": "VanMoof-opties",
         "data": {
-          "poll_interval": "Pollinterval (seconden)"
+          "poll_interval": "Pollinterval (seconden)",
+          "unlock_code": "Ontgrendelcode"
+        },
+        "data_description": {
+          "unlock_code": "Vereist om te ontgrendelen. Zonder code is ontgrendelen via Home Assistant uitgeschakeld."
         }
       }
     }
@@ -173,6 +177,15 @@
           "average": "Gemiddeld",
           "far": "Ver",
           "furthest": "Verst"
+        }
+      },
+      "region_select": {
+        "name": "Regio (wijzigt de wettelijke snelheidslimiet, op eigen risico)",
+        "state": {
+          "eu": "EU (25 km/h)",
+          "us": "VS (32 km/h)",
+          "japan": "Japan (24 km/h)",
+          "offroad": "Offroad (onbeperkt)"
         }
       }
     },

@@ -22,7 +22,11 @@
       "init": {
         "title": "VanMoof options",
         "data": {
-          "poll_interval": "Poll interval (seconds)"
+          "poll_interval": "Poll interval (seconds)",
+          "unlock_code": "Unlock code"
+        },
+        "data_description": {
+          "unlock_code": "Required to unlock. Without a code, unlocking from Home Assistant is disabled."
         }
       }
     }
@@ -173,6 +177,15 @@
           "average": "Average",
           "far": "Far",
           "furthest": "Furthest"
+        }
+      },
+      "region_select": {
+        "name": "Region (changes the legal speed limit, use at your own risk)",
+        "state": {
+          "eu": "EU (25 km/h)",
+          "us": "US (32 km/h)",
+          "japan": "Japan (24 km/h)",
+          "offroad": "Offroad (unrestricted)"
         }
       }
     },

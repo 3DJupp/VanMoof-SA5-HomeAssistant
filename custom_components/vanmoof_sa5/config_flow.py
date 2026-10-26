@@ -19,6 +19,7 @@ from .api import (
 )
 from .const import (
     CONF_POLL_INTERVAL,
+    CONF_UNLOCK_CODE,
     DEFAULT_POLL_INTERVAL,
     DOMAIN,
 )
@@ -114,7 +115,11 @@ class VanMoofOptionsFlow(config_entries.OptionsFlow):
                         default=self.config_entry.options.get(
                             CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL
                         ),
-                    ): vol.All(vol.Coerce(int), vol.Range(min=60, max=3600))
+                    ): vol.All(vol.Coerce(int), vol.Range(min=60, max=3600)),
+                    vol.Optional(
+                        CONF_UNLOCK_CODE,
+                        default=self.config_entry.options.get(CONF_UNLOCK_CODE, ""),
+                    ): str,
                 }
             ),
         )

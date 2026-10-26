@@ -12,7 +12,7 @@ Home Assistant integration for the VanMoof S/A5 e-bike series. This custom integ
 - Weekly ride statistics from the VanMoof cloud (rides, distance, average distance)
 
 **Controls**
-- `lock` entity: **unlock** the bike (the bike can only be locked with its own button)
+- **Unlock** the bike (code protected, see below; the bike can only be locked with its own button)
 - Assist level (off, 1 to 4), light mode (on / off / auto), bell sound
 - Alarm, brake light mode, indicator light mode, riding display, start-up animation theme
 - Touch unlock (proximity unlock) with selectable distance
@@ -21,7 +21,13 @@ Home Assistant integration for the VanMoof S/A5 e-bike series. This custom integ
 - Works with local Bluetooth adapters and ESPHome Bluetooth proxies through the Home Assistant Bluetooth stack
 - Every command connects, authenticates, applies the change and reads the new state back
 
-Not exposed on purpose: changing the region (this changes the legal speed limit), the backup code and firmware flashing.
+Disabled by default (enable them in the entity settings):
+- `lock` entity: unlocking only works after you set an **unlock code** in the integration options, and the code is required on every `lock.unlock` call.
+- Region select (EU 25 km/h, US 32, Japan 24, offroad unrestricted).
+
+> **Disclaimer:** Changing the region changes the legal speed limit of the bike. In many countries an unrestricted e-bike is no longer a legal pedelec. Use it at your own risk; the authors take no responsibility.
+
+Not exposed on purpose: the backup code and firmware flashing.
 
 ### Notes
 
@@ -32,7 +38,7 @@ Not exposed on purpose: changing the region (this changes the legal speed limit)
 
 ### Security
 
-Unlocking from Home Assistant is a physical security feature. Anyone who can call `lock.unlock` on your instance can unlock your bike, so restrict who can use that service and think twice before automating it on presence alone.
+Unlocking from Home Assistant is a physical security feature. It is off until you enable the lock entity and set an unlock code, and every unlock needs that code. Do not hard-code the code into automations that anyone else can read.
 
 ## Install via HACS
 

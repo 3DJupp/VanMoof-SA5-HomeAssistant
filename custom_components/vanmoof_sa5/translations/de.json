@@ -22,7 +22,11 @@
       "init": {
         "title": "VanMoof-Optionen",
         "data": {
-          "poll_interval": "Abfrageintervall (Sekunden)"
+          "poll_interval": "Abfrageintervall (Sekunden)",
+          "unlock_code": "Entsperr-Code"
+        },
+        "data_description": {
+          "unlock_code": "Zum Entsperren erforderlich. Ohne Code ist das Entsperren aus Home Assistant deaktiviert."
         }
       }
     }
@@ -173,6 +177,15 @@
           "average": "Mittel",
           "far": "Weit",
           "furthest": "Am weitesten"
+        }
+      },
+      "region_select": {
+        "name": "Region (ändert das gesetzliche Tempolimit, auf eigene Verantwortung)",
+        "state": {
+          "eu": "EU (25 km/h)",
+          "us": "USA (32 km/h)",
+          "japan": "Japan (24 km/h)",
+          "offroad": "Offroad (unbegrenzt)"
         }
       }
     },
