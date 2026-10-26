@@ -1,6 +1,9 @@
 {
   "domain": "vanmoof_sa5",
   "name": "VanMoof SA5",
+  "categories": [
+    "vehicles_transport.bikes_scooters"
+  ],
   "codeowners": [
     "@timthebeastnl",
     "@j-o-a-c-h-i"
