@@ -7,7 +7,7 @@
   ],
   "config_flow": true,
   "dependencies": [
-    "bluetooth_adapters"
+    "bluetooth"
   ],
   "documentation": "https://github.com/TimTheBeastNL/VanMoof-SA5-HomeAssistant",
   "iot_class": "local_polling",
@@ -16,8 +16,7 @@
     "custom_components.vanmoof_sa5"
   ],
   "requirements": [
-    "bleak>=0.22.3",
-    "cryptography>=44.0.0"
+    "bleak>=0.22.3"
   ],
   "version": "0.3.0"
 }
