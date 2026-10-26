@@ -15,7 +15,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .api import VanMoofApiClient, VanMoofApiError
-from .ble import VanMoofBikeBleClient, VanMoofBleError
+from .ble import VanMoofBikeBleClient, VanMoofBleConnectError, VanMoofBleError
 from .const import (
     CONF_POLL_INTERVAL,
     DEFAULT_POLL_INTERVAL,
@@ -28,6 +28,14 @@ from .protocol import BleWrite, write_touch_unlock
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_TOUCH_UNLOCK_DISTANCE = "average"
+
+
+def _connection_state_for(err: VanMoofBleError) -> str:
+    if isinstance(err, VanMoofBleConnectError):
+        return "unreachable"
+    if "No nearby VanMoof BLE advertisements were found" in str(err):
+        return "out_of_range"
+    return "error"
 
 
 @dataclass(slots=True)
@@ -100,11 +108,7 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
                 state = BikeState(
                     available=False,
                     in_range=False,
-                    connection_state=(
-                        "out_of_range"
-                        if "No nearby VanMoof BLE advertisements were found" in str(err)
-                        else "error"
-                    ),
+                    connection_state=_connection_state_for(err),
                     errors=str(err),
                 )
                 state.carry_over(previous_state)
