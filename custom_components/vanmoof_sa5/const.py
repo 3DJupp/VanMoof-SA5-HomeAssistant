@@ -4,10 +4,11 @@ from __future__ import annotations
 
 DOMAIN = "vanmoof_sa5"
 
-PLATFORMS = ["sensor", "binary_sensor", "button"]
+PLATFORMS = ["sensor", "binary_sensor", "button", "lock", "select", "switch"]
 
 DEFAULT_SCAN_SECONDS = 8.0
 DEFAULT_POLL_INTERVAL = 300
+WEEKLY_REFRESH_SECONDS = 6 * 60 * 60
 CERT_RENEWAL_WINDOW_SECONDS = 24 * 60 * 60
 
 CONF_AUTH_TOKEN = "auth_token"
@@ -15,11 +16,13 @@ CONF_APP_TOKEN = "app_token"
 CONF_REFRESH_TOKEN = "refresh_token"
 CONF_BIKES = "bikes"
 CONF_POLL_INTERVAL = "poll_interval"
+CONF_UNLOCK_CODE = "unlock_code"
 
 API_KEY = "fcb38d47-f14b-30cf-843b-26283f6a5819"
 API_BASE_URL = "https://api.vanmoof-api.com/v8"
 BIKE_API_BASE_URL = "https://bikeapi.production.vanmoof.cloud"
 VEHICLE_REGISTRY_BASE_URL = "https://vehicleregistry.production.vanmoof.cloud"
+TENJIN_BASE_URL = "https://tenjin.vanmoof.com/api/v1"
 
 SUPPORTED_BLE_PROFILES = {
     "ELECTRIFIED_2022": "SA5",

@@ -22,29 +22,186 @@
       "init": {
         "title": "VanMoof-Optionen",
         "data": {
-          "poll_interval": "Abfrageintervall (Sekunden)"
+          "poll_interval": "Abfrageintervall (Sekunden)",
+          "unlock_code": "Entsperr-Code"
+        },
+        "data_description": {
+          "unlock_code": "Zum Entsperren erforderlich. Ohne Code ist das Entsperren aus Home Assistant deaktiviert."
         }
       }
     }
   },
   "entity": {
     "sensor": {
-      "battery": { "name": "Akku" },
-      "module_battery": { "name": "Modul-Akku" },
-      "distance": { "name": "Entfernung" },
-      "power_level": { "name": "Unterstützungsstufe" },
-      "connection_state": { "name": "Verbindungsstatus" },
-      "last_seen": { "name": "Zuletzt gesehen" },
-      "light_mode": { "name": "Lichtmodus" },
-      "firmware_info": { "name": "Firmware-Info" },
-      "errors": { "name": "Fehler" }
+      "battery": {
+        "name": "Akku"
+      },
+      "module_battery": {
+        "name": "Modul-Akku"
+      },
+      "distance": {
+        "name": "Entfernung"
+      },
+      "power_level": {
+        "name": "Unterstützungsstufe"
+      },
+      "connection_state": {
+        "name": "Verbindungsstatus"
+      },
+      "last_seen": {
+        "name": "Zuletzt gesehen"
+      },
+      "light_mode": {
+        "name": "Lichtmodus"
+      },
+      "firmware_info": {
+        "name": "Firmware-Info"
+      },
+      "errors": {
+        "name": "Fehler"
+      },
+      "lock_state": {
+        "name": "Sperrstatus",
+        "state": {
+          "locked": "Gesperrt",
+          "unlocking": "Wird entsperrt",
+          "unlocked": "Entsperrt"
+        }
+      },
+      "bike_state": {
+        "name": "Radstatus",
+        "state": {
+          "off": "Aus",
+          "shipping": "Versand",
+          "standby": "Standby",
+          "on": "An"
+        }
+      },
+      "region": {
+        "name": "Region",
+        "state": {
+          "eu": "EU",
+          "us": "USA",
+          "japan": "Japan",
+          "offroad": "Offroad"
+        }
+      },
+      "speed_limit": {
+        "name": "Geschwindigkeitsgrenze"
+      },
+      "firmware_version": {
+        "name": "Firmware-Version"
+      },
+      "update_available": {
+        "name": "Update verfügbar"
+      },
+      "find_my_version": {
+        "name": "Find-My-Version"
+      },
+      "weekly_rides": {
+        "name": "Fahrten diese Woche"
+      },
+      "weekly_distance": {
+        "name": "Strecke diese Woche"
+      },
+      "weekly_average_distance": {
+        "name": "Ø Fahrtstrecke diese Woche"
+      }
     },
     "binary_sensor": {
-      "locked": { "name": "Gesperrt" },
-      "in_range": { "name": "In Reichweite" }
+      "locked": {
+        "name": "Gesperrt"
+      },
+      "in_range": {
+        "name": "In Reichweite"
+      }
     },
     "button": {
-      "refresh": { "name": "Jetzt aktualisieren" }
+      "refresh": {
+        "name": "Jetzt aktualisieren"
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "Schloss"
+      }
+    },
+    "select": {
+      "assist_level": {
+        "name": "Unterstützungsstufe",
+        "state": {
+          "off": "Aus",
+          "1": "1",
+          "2": "2",
+          "3": "3",
+          "4": "4"
+        }
+      },
+      "light_mode_select": {
+        "name": "Lichtmodus",
+        "state": {
+          "on": "Immer an",
+          "off": "Aus",
+          "auto": "Automatisch"
+        }
+      },
+      "bell_sound_select": {
+        "name": "Klingelton",
+        "state": {
+          "ding_dong": "Ding-Dong",
+          "party_horn": "Partyhorn",
+          "ping": "Ping",
+          "vanmoof": "VanMoof",
+          "ship_horn": "Schiffshorn"
+        }
+      },
+      "riding_display": {
+        "name": "Fahranzeige",
+        "state": {
+          "speed": "Geschwindigkeit",
+          "motor_power": "Motorleistung"
+        }
+      },
+      "animation_theme": {
+        "name": "Animations-Thema",
+        "state": {
+          "default": "Standard",
+          "pride": "Pride"
+        }
+      },
+      "touch_unlock_distance": {
+        "name": "Touch-Unlock-Entfernung",
+        "state": {
+          "closest": "Am nächsten",
+          "close": "Nah",
+          "average": "Mittel",
+          "far": "Weit",
+          "furthest": "Am weitesten"
+        }
+      },
+      "region_select": {
+        "name": "Region (ändert das gesetzliche Tempolimit, auf eigene Verantwortung)",
+        "state": {
+          "eu": "EU (25 km/h)",
+          "us": "USA (32 km/h)",
+          "japan": "Japan (24 km/h)",
+          "offroad": "Offroad (unbegrenzt)"
+        }
+      }
+    },
+    "switch": {
+      "alarm": {
+        "name": "Alarm"
+      },
+      "brake_light": {
+        "name": "Bremslicht"
+      },
+      "indicator_light": {
+        "name": "Blinker-Modus"
+      },
+      "touch_unlock": {
+        "name": "Touch Unlock"
+      }
     }
   }
 }

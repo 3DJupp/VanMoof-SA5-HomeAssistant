@@ -15,28 +15,187 @@
   "options": {
     "step": {
       "init": {
-        "title": "VanMoof options"
+        "title": "VanMoof options",
+        "data": {
+          "unlock_code": "Unlock code"
+        },
+        "data_description": {
+          "unlock_code": "Required to unlock. Without a code, unlocking from Home Assistant is disabled."
+        }
       }
     }
   },
   "entity": {
     "sensor": {
-      "battery": { "name": "Battery" },
-      "module_battery": { "name": "Module battery" },
-      "distance": { "name": "Distance" },
-      "power_level": { "name": "Power level" },
-      "connection_state": { "name": "Connection state" },
-      "last_seen": { "name": "Last seen" },
-      "light_mode": { "name": "Light mode" },
-      "firmware_info": { "name": "Firmware info" },
-      "errors": { "name": "Errors" }
+      "battery": {
+        "name": "Battery"
+      },
+      "module_battery": {
+        "name": "Module battery"
+      },
+      "distance": {
+        "name": "Distance"
+      },
+      "power_level": {
+        "name": "Power level"
+      },
+      "connection_state": {
+        "name": "Connection state"
+      },
+      "last_seen": {
+        "name": "Last seen"
+      },
+      "light_mode": {
+        "name": "Light mode"
+      },
+      "firmware_info": {
+        "name": "Firmware info"
+      },
+      "errors": {
+        "name": "Errors"
+      },
+      "lock_state": {
+        "name": "Lock state",
+        "state": {
+          "locked": "Locked",
+          "unlocking": "Unlocking",
+          "unlocked": "Unlocked"
+        }
+      },
+      "bike_state": {
+        "name": "Bike state",
+        "state": {
+          "off": "Off",
+          "shipping": "Shipping",
+          "standby": "Standby",
+          "on": "On"
+        }
+      },
+      "region": {
+        "name": "Region",
+        "state": {
+          "eu": "EU",
+          "us": "US",
+          "japan": "Japan",
+          "offroad": "Offroad"
+        }
+      },
+      "speed_limit": {
+        "name": "Speed limit"
+      },
+      "firmware_version": {
+        "name": "Firmware version"
+      },
+      "update_available": {
+        "name": "Update available"
+      },
+      "find_my_version": {
+        "name": "Find My version"
+      },
+      "weekly_rides": {
+        "name": "Rides this week"
+      },
+      "weekly_distance": {
+        "name": "Distance this week"
+      },
+      "weekly_average_distance": {
+        "name": "Average ride distance this week"
+      }
     },
     "binary_sensor": {
-      "locked": { "name": "Locked" },
-      "in_range": { "name": "In range" }
+      "locked": {
+        "name": "Locked"
+      },
+      "in_range": {
+        "name": "In range"
+      }
     },
     "button": {
-      "refresh": { "name": "Refresh now" }
+      "refresh": {
+        "name": "Refresh now"
+      }
+    },
+    "lock": {
+      "lock": {
+        "name": "Lock"
+      }
+    },
+    "select": {
+      "assist_level": {
+        "name": "Assist level",
+        "state": {
+          "off": "Off",
+          "1": "1",
+          "2": "2",
+          "3": "3",
+          "4": "4"
+        }
+      },
+      "light_mode_select": {
+        "name": "Light mode",
+        "state": {
+          "on": "Always on",
+          "off": "Off",
+          "auto": "Auto"
+        }
+      },
+      "bell_sound_select": {
+        "name": "Bell sound",
+        "state": {
+          "ding_dong": "Ding dong",
+          "party_horn": "Party horn",
+          "ping": "Ping",
+          "vanmoof": "VanMoof",
+          "ship_horn": "Ship horn"
+        }
+      },
+      "riding_display": {
+        "name": "Riding display",
+        "state": {
+          "speed": "Speed",
+          "motor_power": "Motor power"
+        }
+      },
+      "animation_theme": {
+        "name": "Animation theme",
+        "state": {
+          "default": "Default",
+          "pride": "Pride"
+        }
+      },
+      "touch_unlock_distance": {
+        "name": "Touch unlock distance",
+        "state": {
+          "closest": "Closest",
+          "close": "Close",
+          "average": "Average",
+          "far": "Far",
+          "furthest": "Furthest"
+        }
+      },
+      "region_select": {
+        "name": "Region (changes the legal speed limit, use at your own risk)",
+        "state": {
+          "eu": "EU (25 km/h)",
+          "us": "US (32 km/h)",
+          "japan": "Japan (24 km/h)",
+          "offroad": "Offroad (unrestricted)"
+        }
+      }
+    },
+    "switch": {
+      "alarm": {
+        "name": "Alarm"
+      },
+      "brake_light": {
+        "name": "Brake light"
+      },
+      "indicator_light": {
+        "name": "Indicator light mode"
+      },
+      "touch_unlock": {
+        "name": "Touch unlock"
+      }
     }
   }
 }
