@@ -9,7 +9,13 @@ from homeassistant.components.diagnostics import async_redact_data
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 
-from .const import CONF_APP_TOKEN, CONF_AUTH_TOKEN, CONF_REFRESH_TOKEN, DOMAIN
+from .const import (
+    CONF_APP_TOKEN,
+    CONF_AUTH_TOKEN,
+    CONF_REFRESH_TOKEN,
+    CONF_UNLOCK_CODE,
+    DOMAIN,
+)
 from .coordinator import VanMoofDataUpdateCoordinator
 from .protocol import TOPIC_NAMES
 
@@ -19,6 +25,7 @@ TO_REDACT = {
     CONF_AUTH_TOKEN,
     CONF_APP_TOKEN,
     CONF_REFRESH_TOKEN,
+    CONF_UNLOCK_CODE,
     "certificate",
     "private_key",
     "public_key",
@@ -63,7 +70,7 @@ async def async_get_config_entry_diagnostics(
                 {key: value for key, value in entry.data.items() if key != "bikes"},
                 TO_REDACT,
             ),
-            "options": dict(entry.options),
+            "options": async_redact_data(dict(entry.options), TO_REDACT),
         },
         "bikes": bikes,
     }
