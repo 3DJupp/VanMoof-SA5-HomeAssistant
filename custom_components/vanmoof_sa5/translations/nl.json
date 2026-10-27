@@ -105,6 +105,74 @@
         "name": "Nu vernieuwen"
       }
     },
+    "select": {
+      "assist_level": {
+        "name": "Trapondersteuning",
+        "state": {
+          "off": "Uit",
+          "1": "1",
+          "2": "2",
+          "3": "3",
+          "4": "4"
+        }
+      },
+      "light_mode_select": {
+        "name": "Lichtmodus",
+        "state": {
+          "on": "Altijd aan",
+          "off": "Uit",
+          "auto": "Automatisch"
+        }
+      },
+      "bell_sound_select": {
+        "name": "Belgeluid",
+        "state": {
+          "ding_dong": "Ding-dong",
+          "party_horn": "Feesttoeter",
+          "ping": "Ping",
+          "vanmoof": "VanMoof",
+          "ship_horn": "Scheepstoeter"
+        }
+      },
+      "riding_display": {
+        "name": "Rijdisplay",
+        "state": {
+          "speed": "Snelheid",
+          "motor_power": "Motorvermogen"
+        }
+      },
+      "animation_theme": {
+        "name": "Animatiethema",
+        "state": {
+          "default": "Standaard",
+          "pride": "Pride"
+        }
+      },
+      "touch_unlock_distance": {
+        "name": "Touch unlock-afstand",
+        "state": {
+          "closest": "Dichtstbij",
+          "close": "Dichtbij",
+          "average": "Gemiddeld",
+          "far": "Ver",
+          "furthest": "Verst"
+        }
+      }
+    },
+    "switch": {
+      "alarm": {
+        "name": "Alarm"
+      },
+      "brake_light": {
+        "name": "Remlicht"
+      },
+      "indicator_light": {
+        "name": "Knipperlichtmodus"
+      },
+      "touch_unlock": {
+        "name": "Touch unlock"
+      }
+    },
     "update": {
       "firmware": {
         "name": "Firmware"

@@ -100,6 +100,74 @@
         "name": "Refresh now"
       }
     },
+    "select": {
+      "assist_level": {
+        "name": "Assist level",
+        "state": {
+          "off": "Off",
+          "1": "1",
+          "2": "2",
+          "3": "3",
+          "4": "4"
+        }
+      },
+      "light_mode_select": {
+        "name": "Light mode",
+        "state": {
+          "on": "Always on",
+          "off": "Off",
+          "auto": "Auto"
+        }
+      },
+      "bell_sound_select": {
+        "name": "Bell sound",
+        "state": {
+          "ding_dong": "Ding dong",
+          "party_horn": "Party horn",
+          "ping": "Ping",
+          "vanmoof": "VanMoof",
+          "ship_horn": "Ship horn"
+        }
+      },
+      "riding_display": {
+        "name": "Riding display",
+        "state": {
+          "speed": "Speed",
+          "motor_power": "Motor power"
+        }
+      },
+      "animation_theme": {
+        "name": "Animation theme",
+        "state": {
+          "default": "Default",
+          "pride": "Pride"
+        }
+      },
+      "touch_unlock_distance": {
+        "name": "Touch unlock distance",
+        "state": {
+          "closest": "Closest",
+          "close": "Close",
+          "average": "Average",
+          "far": "Far",
+          "furthest": "Furthest"
+        }
+      }
+    },
+    "switch": {
+      "alarm": {
+        "name": "Alarm"
+      },
+      "brake_light": {
+        "name": "Brake light"
+      },
+      "indicator_light": {
+        "name": "Indicator light mode"
+      },
+      "touch_unlock": {
+        "name": "Touch unlock"
+      }
+    },
     "update": {
       "firmware": {
         "name": "Firmware"

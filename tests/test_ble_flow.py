@@ -19,6 +19,9 @@ from custom_components.vanmoof_sa5.protocol import (  # noqa: E402
     PayloadType,
     Topic,
     build_fragments,
+    write_bell_sound,
+    write_power_level,
+    write_touch_unlock,
 )
 
 
@@ -122,6 +125,7 @@ def bike_env(monkeypatch):
     monkeypatch.setattr(ble_module, "establish_connection", fake_establish)
     monkeypatch.setattr(ble_module, "_QUIET_SECONDS", 0.05)
     monkeypatch.setattr(ble_module, "_FIRST_MESSAGE_SECONDS", 0.5)
+    monkeypatch.setattr(ble_module, "_WRITE_SPACING_SECONDS", 0.0)
 
     real_sleep = asyncio.sleep
     monkeypatch.setattr(ble_module.asyncio, "sleep", lambda d: real_sleep(0))
@@ -160,6 +164,21 @@ def test_fetch_state_maps_all_topics(bike_env):
     assert state.find_my_version == "1.4.77"
     assert state.find_my_state["paired"] is True
     assert 116 not in fake.subscribed
+
+
+def test_settings_roundtrip(bike_env):
+    fake, client = bike_env
+    state, _ = asyncio.run(
+        client.async_execute([write_power_level(4), write_bell_sound("ship_horn")])
+    )
+    assert fake.writes == [(103, 4), (115, 4)]
+    assert state.power_level == "4" and state.bell_sound == "ship_horn"
+
+
+def test_touch_unlock_write_is_a_cbor_map(bike_env):
+    fake, client = bike_env
+    asyncio.run(client.async_execute([write_touch_unlock(True, "close")], read_back=False))
+    assert fake.writes == [(164, {"rssi": -75, "enabled": True})]
 
 
 def test_silent_bike_is_reported_as_error(bike_env):

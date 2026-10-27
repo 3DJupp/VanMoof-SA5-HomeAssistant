@@ -34,6 +34,7 @@ from .protocol import (
     REGIONS,
     RIDING_DISPLAY_MODES,
     AuthMessage,
+    BleWrite,
     ChallengeMessage,
     FragmentReassembler,
     Topic,
@@ -57,6 +58,8 @@ _QUIET_SECONDS = 1.5
 # How long to wait for the very first notification after subscribing.
 _FIRST_MESSAGE_SECONDS = 4.0
 _MAX_COLLECT_SECONDS = 8.0
+# Pause between consecutive writes so the bike processes them one by one.
+_WRITE_SPACING_SECONDS = 0.3
 
 
 class VanMoofBleError(Exception):
@@ -97,6 +100,37 @@ class VanMoofBikeBleClient:
     async def async_fetch_state(self) -> tuple[BikeState, str | None]:
         """Connect, subscribe to all topics and return the current state."""
         topics, address = await self._async_run(self._async_read_topics)
+        return self._build_state(topics), address
+
+    async def async_execute(
+        self, writes: list[BleWrite], *, read_back: bool = True
+    ) -> tuple[BikeState | None, str | None]:
+        """Authenticate, apply ``writes`` and optionally return the new state."""
+
+        async def action(
+            client: BleakClient, write_uuid: str, queue: asyncio.Queue[Any]
+        ) -> dict[int, Any]:
+            topics: dict[int, Any] = {}
+            if read_back:
+                # Subscribe first so the writes below are acknowledged by
+                # notifications that carry the updated values.
+                await self._async_write_fragments(
+                    client, write_uuid, build_subscribe_message(ALL_TOPICS)
+                )
+                await self._async_collect_topics(queue, topics)
+            for write in writes:
+                _LOGGER.debug("Writing %s to topic %s", write.value, int(write.topic))
+                await self._async_write_fragments(client, write_uuid, write.to_payload())
+                await asyncio.sleep(_WRITE_SPACING_SECONDS)
+            if read_back:
+                await self._async_collect_topics(queue, topics, max_duration=4.0)
+            else:
+                await asyncio.sleep(0.5)
+            return topics
+
+        topics, address = await self._async_run(action)
+        if not read_back:
+            return None, address
         return self._build_state(topics), address
 
     async def async_execute_raw_command(self, command_hex: str) -> str | None:

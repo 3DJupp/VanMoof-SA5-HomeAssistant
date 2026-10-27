@@ -78,14 +78,18 @@ SENSORS: tuple[VanMoofSensorDescription, ...] = (
         translation_key="speed_limit",
         value_fn=lambda state: state.speed_limit,
     ),
+    # Kept for backwards compatibility; the select entities are the primary
+    # way to read and change these settings now.
     VanMoofSensorDescription(
         key="power_level",
         translation_key="power_level",
+        entity_registry_enabled_default=False,
         value_fn=lambda state: state.power_level,
     ),
     VanMoofSensorDescription(
         key="light_mode",
         translation_key="light_mode",
+        entity_registry_enabled_default=False,
         value_fn=lambda state: state.light_mode,
     ),
     VanMoofSensorDescription(

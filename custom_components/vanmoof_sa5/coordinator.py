@@ -9,7 +9,7 @@ from datetime import timedelta
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -21,8 +21,11 @@ from .const import (
     DOMAIN,
 )
 from .models import BikeState, VanMoofBike
+from .protocol import BleWrite, write_touch_unlock
 
 _LOGGER = logging.getLogger(__name__)
+
+DEFAULT_TOUCH_UNLOCK_DISTANCE = "average"
 
 
 def _connection_state_for(err: VanMoofBleError) -> str:
@@ -41,6 +44,14 @@ class VanMoofCoordinatorData:
     states: dict[str, BikeState]
 
 
+@dataclass(slots=True)
+class TouchUnlockSettings:
+    """Touch unlock settings. The bike cannot report them, so HA remembers them."""
+
+    enabled: bool = False
+    distance: str = DEFAULT_TOUCH_UNLOCK_DISTANCE
+
+
 class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]):
     """Coordinator that refreshes bikes sequentially over BLE."""
 
@@ -52,6 +63,7 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
     ) -> None:
         self.entry = entry
         self.api = api
+        self.touch_unlock: dict[str, TouchUnlockSettings] = {}
         self._ble_locks: dict[str, asyncio.Lock] = {}
         super().__init__(
             hass,
@@ -111,3 +123,56 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
         """Run an immediate refresh."""
         await self.async_request_refresh()
 
+    async def async_send_writes(self, bike_id: str, writes: list[BleWrite]) -> None:
+        """Send ``writes`` to a bike and publish the state read back afterwards."""
+        bike = self.api.bikes.get(bike_id)
+        if bike is None:
+            raise HomeAssistantError(f"Unknown VanMoof bike {bike_id}")
+
+        try:
+            await self.api.async_ensure_certificates([bike])
+            async with self._lock_for(bike_id):
+                state, address = await VanMoofBikeBleClient(bike, self.hass).async_execute(
+                    writes
+                )
+        except (VanMoofApiError, VanMoofBleError) as err:
+            raise HomeAssistantError(f"Could not send command to {bike.name}: {err}") from err
+
+        if address and bike.ble_address != address:
+            bike.ble_address = address
+
+        if state is not None and self.data is not None:
+            previous = self.data.states.get(bike_id)
+            state.last_seen = dt_util.utcnow()
+            state.carry_over(previous)
+            states = dict(self.data.states)
+            states[bike_id] = state
+            self.async_set_updated_data(
+                VanMoofCoordinatorData(
+                    bikes=dict(self.api.bikes), states=states
+                )
+            )
+
+    # ------------------------------------------------------------------
+    # Touch unlock (write-only on the bike, so the settings live in HA)
+    # ------------------------------------------------------------------
+
+    def touch_unlock_for(self, bike_id: str) -> TouchUnlockSettings:
+        """Return the remembered touch unlock settings for a bike."""
+        return self.touch_unlock.setdefault(bike_id, TouchUnlockSettings())
+
+    async def async_set_touch_unlock(
+        self,
+        bike_id: str,
+        *,
+        enabled: bool | None = None,
+        distance: str | None = None,
+    ) -> None:
+        """Update and send the touch unlock configuration."""
+        settings = self.touch_unlock_for(bike_id)
+        new_enabled = settings.enabled if enabled is None else enabled
+        new_distance = settings.distance if distance is None else distance
+        await self.async_send_writes(bike_id, [write_touch_unlock(new_enabled, new_distance)])
+        settings.enabled = new_enabled
+        settings.distance = new_distance
+        self.async_update_listeners()

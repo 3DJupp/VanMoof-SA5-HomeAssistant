@@ -12,13 +12,20 @@ Home Assistant integration for the VanMoof S/A5 e-bike series. This custom integ
 - Firmware update entity: shows when the bike reports a newer firmware (install it with the VanMoof app)
 - Error count with the error map reported by the bike as attributes
 
+**Controls**
+- Assist level (off, 1 to 4), light mode (on / off / auto), bell sound
+- Alarm, brake light mode, indicator light mode, riding display, start-up animation theme
+- Touch unlock (proximity unlock) with selectable distance
+
 **Connection**
 - Works with local Bluetooth adapters and ESPHome Bluetooth proxies through the Home Assistant Bluetooth stack
+- Every command connects, authenticates, applies the change and reads the new state back
 
-Read only: this version does not change any setting on the bike. Firmware flashing is not exposed on purpose.
+Not exposed on purpose: unlocking, changing the region (legal speed limit), the backup code and firmware flashing.
 
 ### Notes
 
+- The bike does not report the touch unlock setting. Home Assistant remembers the last value you set.
 - Protocol details: [docs/PROTOCOL.md](docs/PROTOCOL.md)
 - Only SA5/A5 bikes are supported. The S6 uses a different Bluetooth service.
 

@@ -105,6 +105,74 @@
         "name": "Jetzt aktualisieren"
       }
     },
+    "select": {
+      "assist_level": {
+        "name": "Unterstützungsstufe",
+        "state": {
+          "off": "Aus",
+          "1": "1",
+          "2": "2",
+          "3": "3",
+          "4": "4"
+        }
+      },
+      "light_mode_select": {
+        "name": "Lichtmodus",
+        "state": {
+          "on": "Immer an",
+          "off": "Aus",
+          "auto": "Automatisch"
+        }
+      },
+      "bell_sound_select": {
+        "name": "Klingelton",
+        "state": {
+          "ding_dong": "Ding-Dong",
+          "party_horn": "Partyhorn",
+          "ping": "Ping",
+          "vanmoof": "VanMoof",
+          "ship_horn": "Schiffshorn"
+        }
+      },
+      "riding_display": {
+        "name": "Fahranzeige",
+        "state": {
+          "speed": "Geschwindigkeit",
+          "motor_power": "Motorleistung"
+        }
+      },
+      "animation_theme": {
+        "name": "Animations-Thema",
+        "state": {
+          "default": "Standard",
+          "pride": "Pride"
+        }
+      },
+      "touch_unlock_distance": {
+        "name": "Touch-Unlock-Entfernung",
+        "state": {
+          "closest": "Am nächsten",
+          "close": "Nah",
+          "average": "Mittel",
+          "far": "Weit",
+          "furthest": "Am weitesten"
+        }
+      }
+    },
+    "switch": {
+      "alarm": {
+        "name": "Alarm"
+      },
+      "brake_light": {
+        "name": "Bremslicht"
+      },
+      "indicator_light": {
+        "name": "Blinker-Modus"
+      },
+      "touch_unlock": {
+        "name": "Touch Unlock"
+      }
+    },
     "update": {
       "firmware": {
         "name": "Firmware"
