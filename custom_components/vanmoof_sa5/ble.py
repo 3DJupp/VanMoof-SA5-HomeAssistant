@@ -47,6 +47,7 @@ from .protocol import (
 )
 
 if TYPE_CHECKING:
+    from homeassistant.components.bluetooth import BluetoothServiceInfoBleak
     from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
@@ -79,6 +80,11 @@ def _looks_like_vanmoof(name: str | None, service_uuids: Iterable[str] | None) -
         or SERVICE_UUID.lower() in services
         or SERVICE_UUID_NODASH.lower() in services
     )
+
+
+def is_vanmoof_advertisement(service_info: BluetoothServiceInfoBleak) -> bool:
+    """Return True if a Bluetooth advertisement belongs to a VanMoof bike."""
+    return _looks_like_vanmoof(service_info.name, service_info.service_uuids)
 
 
 class VanMoofBikeBleClient:

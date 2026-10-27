@@ -13,6 +13,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     api = await async_bootstrap_client(hass, dict(entry.data))
     coordinator = VanMoofDataUpdateCoordinator(hass, entry, api)
     await coordinator.async_config_entry_first_refresh()
+    coordinator.async_start_presence_tracking()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(
         entry, [Platform(platform) for platform in PLATFORMS]

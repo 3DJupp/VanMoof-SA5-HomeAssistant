@@ -7,18 +7,25 @@ import logging
 from dataclasses import dataclass
 from datetime import timedelta
 
+from homeassistant.components import bluetooth
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import ConfigEntryAuthFailed, HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
 from .api import VanMoofApiClient, VanMoofApiError
-from .ble import VanMoofBikeBleClient, VanMoofBleConnectError, VanMoofBleError
+from .ble import (
+    VanMoofBikeBleClient,
+    VanMoofBleConnectError,
+    VanMoofBleError,
+    is_vanmoof_advertisement,
+)
 from .const import (
     CONF_POLL_INTERVAL,
     DEFAULT_POLL_INTERVAL,
     DOMAIN,
+    SERVICE_UUID,
 )
 from .models import BikeState, VanMoofBike
 from .protocol import BleWrite, write_touch_unlock
@@ -65,6 +72,7 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
         self.api = api
         self.touch_unlock: dict[str, TouchUnlockSettings] = {}
         self._ble_locks: dict[str, asyncio.Lock] = {}
+        self._tracked_addresses: set[str] = set()
         super().__init__(
             hass,
             _LOGGER,
@@ -78,6 +86,82 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
     def _lock_for(self, bike_id: str) -> asyncio.Lock:
         return self._ble_locks.setdefault(bike_id, asyncio.Lock())
 
+    @callback
+    def async_start_presence_tracking(self) -> None:
+        """Follow bike advertisements passively via the Bluetooth integration."""
+        self.entry.async_on_unload(
+            bluetooth.async_register_callback(
+                self.hass,
+                self._async_handle_advertisement,
+                bluetooth.BluetoothCallbackMatcher(
+                    service_uuid=SERVICE_UUID, connectable=False
+                ),
+                bluetooth.BluetoothScanningMode.PASSIVE,
+            )
+        )
+        for bike in self.api.bikes.values():
+            self._async_track_unavailable(bike)
+
+    @callback
+    def _async_track_unavailable(self, bike: VanMoofBike) -> None:
+        address = bike.ble_address
+        if not address or address.upper() in self._tracked_addresses:
+            return
+        self._tracked_addresses.add(address.upper())
+        self.entry.async_on_unload(
+            bluetooth.async_track_unavailable(
+                self.hass,
+                self._async_handle_unavailable,
+                address,
+                connectable=False,
+            )
+        )
+
+    @callback
+    def _async_handle_advertisement(
+        self,
+        service_info: bluetooth.BluetoothServiceInfoBleak,
+        change: bluetooth.BluetoothChange,
+    ) -> None:
+        if not is_vanmoof_advertisement(service_info) or not self.data:
+            return
+        bike = self._bike_for_address(service_info.address)
+        if bike is None:
+            # Unknown address: a bike without a learned address may be nearby
+            if any(not known.ble_address for known in self.api.bikes.values()):
+                self.hass.async_create_task(self.async_request_refresh())
+            return
+        state = self.data.states.get(bike.unique_id)
+        if state is None or state.in_range:
+            return
+        _LOGGER.debug("Bike %s came into range, refreshing", bike.frame_number)
+        state.in_range = True
+        self.async_update_listeners()
+        self.hass.async_create_task(self.async_request_refresh())
+
+    @callback
+    def _async_handle_unavailable(
+        self, service_info: bluetooth.BluetoothServiceInfoBleak
+    ) -> None:
+        if not self.data:
+            return
+        bike = self._bike_for_address(service_info.address)
+        if bike is None:
+            return
+        state = self.data.states.get(bike.unique_id)
+        if state is None or not state.in_range:
+            return
+        _LOGGER.debug("Bike %s went out of range", bike.frame_number)
+        state.in_range = False
+        state.connection_state = "out_of_range"
+        self.async_update_listeners()
+
+    def _bike_for_address(self, address: str) -> VanMoofBike | None:
+        for bike in self.api.bikes.values():
+            if bike.ble_address and bike.ble_address.upper() == address.upper():
+                return bike
+        return None
+
     async def _async_update_data(self) -> VanMoofCoordinatorData:
         try:
             await self.api.async_ensure_certificates(list(self.api.bikes.values()))
@@ -89,6 +173,18 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
         states: dict[str, BikeState] = {}
         for bike in self.api.bikes.values():
             previous_state = self.data.states.get(bike.unique_id) if self.data else None
+
+            if bike.ble_address and not bluetooth.async_address_present(
+                self.hass, bike.ble_address, connectable=False
+            ):
+                # Bike is away: do not connect, its next advertisement triggers a refresh
+                state = BikeState(
+                    available=False, in_range=False, connection_state="out_of_range"
+                )
+                state.carry_over(previous_state)
+                states[bike.unique_id] = state
+                continue
+
             try:
                 async with self._lock_for(bike.unique_id):
                     state, address = await VanMoofBikeBleClient(
@@ -96,6 +192,7 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
                     ).async_fetch_state()
                 if address and bike.ble_address != address:
                     bike.ble_address = address
+                    self._async_track_unavailable(bike)
                 state.last_seen = dt_util.utcnow()
                 state.carry_over(previous_state)
                 states[bike.unique_id] = state
@@ -140,6 +237,7 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
 
         if address and bike.ble_address != address:
             bike.ble_address = address
+            self._async_track_unavailable(bike)
 
         if state is not None and self.data is not None:
             previous = self.data.states.get(bike_id)

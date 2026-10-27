@@ -21,6 +21,7 @@ Home Assistant integration for the VanMoof S/A5 e-bike series. This custom integ
 **Connection**
 - Works with local Bluetooth adapters and ESPHome Bluetooth proxies through the Home Assistant Bluetooth stack
 - Every command connects, authenticates, applies the change and reads the new state back
+- Passive presence detection: "In range" follows the bike's advertisements in real time, without connecting. While the bike is away the integration does not scan or connect, and it refreshes as soon as the bike comes back
 
 Disabled by default (enable them in the entity settings):
 - `lock` entity: unlocking only works after you set an **unlock code** in the integration options, and the code is required on every `lock.unlock` call.
