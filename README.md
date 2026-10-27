@@ -38,6 +38,10 @@ Not exposed on purpose: the backup code and firmware flashing.
 - Protocol details: [docs/PROTOCOL.md](docs/PROTOCOL.md)
 - Only SA5/A5 bikes are supported. The S6 uses a different Bluetooth service.
 
+### Diagnostics
+
+Under **Settings → Devices & Services → VanMoof SA5 → ⋮ → Download diagnostics** you get a JSON file with the last fetched state and all raw topic values the bike sent. E-mail, password, tokens, certificates, keys, frame/serial numbers and the BLE address are redacted. This is useful to verify value mappings on other models or firmware versions.
+
 ### Security
 
 Unlocking from Home Assistant is a physical security feature. It is off until you enable the lock entity and set an unlock code, and every unlock needs that code. Do not hard-code the code into automations that anyone else can read.
