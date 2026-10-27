@@ -11,6 +11,7 @@ from homeassistant.components.binary_sensor import (
     BinarySensorEntityDescription,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -22,6 +23,17 @@ from .entity import VanMoofEntity
 @dataclass(frozen=True, kw_only=True)
 class VanMoofBinarySensorDescription(BinarySensorEntityDescription):
     value_fn: Callable[[Any], Any]
+    attrs_fn: Callable[[Any], dict[str, Any]] | None = None
+
+
+def _find_my_enabled(state: Any) -> bool | None:
+    return (state.find_my_state or {}).get("enabled")
+
+
+def _find_my_attributes(state: Any) -> dict[str, Any]:
+    """Return the Find My status fields reported by the bike."""
+    find_my = state.find_my_state or {}
+    return {key: find_my.get(key) for key in ("ready", "paired", "pairing", "provisioned")}
 
 
 BINARY_SENSORS: tuple[VanMoofBinarySensorDescription, ...] = (
@@ -29,6 +41,13 @@ BINARY_SENSORS: tuple[VanMoofBinarySensorDescription, ...] = (
         key="locked",
         translation_key="locked",
         value_fn=lambda state: state.locked,
+    ),
+    VanMoofBinarySensorDescription(
+        key="find_my",
+        translation_key="find_my",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=_find_my_enabled,
+        attrs_fn=_find_my_attributes,
     ),
     VanMoofBinarySensorDescription(
         key="in_range",
@@ -72,6 +91,11 @@ class VanMoofBinarySensor(VanMoofEntity, BinarySensorEntity):
     @property
     def is_on(self) -> bool | None:
         return self.entity_description.value_fn(self.bike_state)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        attrs_fn = self.entity_description.attrs_fn
+        return None if attrs_fn is None else attrs_fn(self.bike_state)
 
     @property
     def available(self) -> bool:
