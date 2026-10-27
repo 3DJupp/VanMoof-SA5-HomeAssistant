@@ -11,7 +11,8 @@ from typing import TYPE_CHECKING, Any, TypeVar
 
 from bleak import BleakClient, BleakScanner
 from bleak.backends.device import BLEDevice
-from bleak_retry_connector import establish_connection
+from bleak.exc import BleakError
+from bleak_retry_connector import BleakClientWithServiceCache, establish_connection
 
 from .const import (
     APP_CHAR_UUID,
@@ -63,6 +64,10 @@ _WRITE_SPACING_SECONDS = 0.3
 
 class VanMoofBleError(Exception):
     """Raised when BLE communication fails."""
+
+
+class VanMoofBleConnectError(VanMoofBleError):
+    """Raised when the bike is advertising but does not accept a connection."""
 
 
 def _looks_like_vanmoof(name: str | None, service_uuids: Iterable[str] | None) -> bool:
@@ -154,12 +159,15 @@ class VanMoofBikeBleClient:
             raise VanMoofBleError("No nearby VanMoof BLE advertisements were found")
 
         last_error: Exception | None = None
+        connect_failed = True
         for candidate in candidates:
             try:
                 result = await self._async_with_connection(candidate, action)
                 return result, candidate.address
             except Exception as err:  # noqa: BLE001
                 last_error = err
+                if not isinstance(err, VanMoofBleConnectError):
+                    connect_failed = False
                 _LOGGER.debug(
                     "Candidate %s did not work for bike %s",
                     candidate.address,
@@ -167,6 +175,13 @@ class VanMoofBikeBleClient:
                     exc_info=True,
                 )
 
+        if connect_failed:
+            raise VanMoofBleConnectError(
+                f"Bike {self._bike.frame_number} is advertising but did not accept a "
+                "connection. Close the VanMoof app on your phone (the bike allows only "
+                "one Bluetooth connection) or move the Bluetooth adapter or proxy "
+                f"closer to the bike. Last error: {last_error}"
+            )
         raise VanMoofBleError(
             f"Could not authenticate to bike {self._bike.frame_number}: {last_error}"
         )
@@ -187,9 +202,15 @@ class VanMoofBikeBleClient:
             if message is not None:
                 queue.put_nowait(message)
 
-        client = await establish_connection(
-            BleakClient, device, device.name or device.address
-        )
+        try:
+            client = await establish_connection(
+                BleakClientWithServiceCache,
+                device,
+                device.name or device.address,
+                ble_device_callback=self._fresh_device_callback(device),
+            )
+        except (BleakError, asyncio.TimeoutError) as err:
+            raise VanMoofBleConnectError(str(err)) from err
         try:
             write_uuid = await self._async_authenticate_connection(
                 client, queue, notification_handler
@@ -198,6 +219,23 @@ class VanMoofBikeBleClient:
         finally:
             with contextlib.suppress(Exception):
                 await client.disconnect()
+
+    def _fresh_device_callback(self, device: BLEDevice) -> Callable[[], BLEDevice]:
+        """Return a callback that picks the best adapter or proxy on every retry."""
+
+        def callback() -> BLEDevice:
+            if self._hass is None:
+                return device
+            from homeassistant.components import bluetooth
+
+            return (
+                bluetooth.async_ble_device_from_address(
+                    self._hass, device.address, connectable=True
+                )
+                or device
+            )
+
+        return callback
 
     async def _async_read_topics(
         self, client: BleakClient, write_uuid: str, queue: asyncio.Queue[Any]
@@ -370,6 +408,12 @@ class VanMoofBikeBleClient:
         update = topics.get(Topic.UPDATE_AVAILABLE)
         firmware = topics.get(Topic.FIRMWARE_VERSION)
         calories = topics.get(Topic.CALORIES)
+        raw_errors = topics.get(Topic.ERRORS)
+        bike_errors = (
+            {str(key): value for key, value in raw_errors.items()}
+            if isinstance(raw_errors, dict)
+            else {}
+        )
 
         return BikeState(
             available=True,
@@ -379,8 +423,8 @@ class VanMoofBikeBleClient:
             lock_state=LOCK_STATES.get(lock_raw),
             locked=None if lock_raw not in LOCK_STATES else lock_raw == 1,
             bike_state=_map_bike_state(topics.get(Topic.BIKE_STATE)),
-            # The app divides the raw value by 10 to get total kilometres.
-            distance_km=None if distance is None else round(distance / 10.0, 1),
+            # The raw value is in units of 10 m (raw / 100 = km).
+            distance_km=None if distance is None else round(distance / 100.0, 1),
             speed_kmh=None if speed is None else round(speed / 100.0, 1),
             calories=float(calories) if isinstance(calories, int | float) else None,
             power_level=POWER_LEVEL_OPTIONS.get(_as_int(topics.get(Topic.POWER_LEVEL))),
@@ -399,7 +443,8 @@ class VanMoofBikeBleClient:
             find_my_state=_map_find_my_state(find_my),
             connection_state="connected",
             firmware_info=_stringify_value(fw_info),
-            errors=_stringify_value(topics.get(Topic.ERRORS)),
+            bike_errors=bike_errors,
+            error_count=_count_errors(bike_errors),
             raw_topics=topics,
         )
 
@@ -422,7 +467,16 @@ def _map_bike_state(value: object | None) -> str | None:
 def _map_find_my_version(value: object | None) -> str | None:
     if not isinstance(value, dict):
         return None
-    return decode_packed_version(value.get("findMy"))
+    # Firmware versions differ in the key spelling ("findMy" or "findmy").
+    for key, item in value.items():
+        if str(key).lower() == "findmy":
+            return decode_packed_version(item)
+    return None
+
+
+def _count_errors(errors: dict[str, Any]) -> int:
+    """Count active entries; zero, false and empty values mean no error."""
+    return sum(1 for value in errors.values() if value not in (None, False, 0, "", [], {}))
 
 
 def _map_find_my_state(value: object | None) -> dict[str, bool] | None:

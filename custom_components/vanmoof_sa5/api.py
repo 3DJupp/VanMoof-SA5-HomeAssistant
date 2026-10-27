@@ -26,7 +26,6 @@ from .const import (
     CONF_BIKES,
     CONF_REFRESH_TOKEN,
     SUPPORTED_BLE_PROFILES,
-    TENJIN_BASE_URL,
     VEHICLE_REGISTRY_BASE_URL,
 )
 from .models import VanMoofBike
@@ -129,29 +128,6 @@ class VanMoofApiClient:
             self._bikes[bike.unique_id] = bike
 
         return self._bikes
-
-    async def async_get_weekly_summary(self, bike: VanMoofBike) -> dict[str, Any] | None:
-        """Return the newest weekly ride summary of the rider/bike pair.
-
-        This is the endpoint behind the weekly report in the VanMoof app
-        (``tenjin`` service). The response is a UI oriented document, so the
-        summary object is located by walking the JSON tree.
-        """
-        if not self._customer_uuid:
-            return None
-        await self._async_resolve_tokens()
-        url = (
-            f"{TENJIN_BASE_URL}/rides/{self._customer_uuid}/{bike.unique_id}/weekly?limit=1"
-        )
-        try:
-            response = await self._async_request(
-                "get", url, headers={"Authorization": f"Bearer {self._app_token}"}
-            )
-        except VanMoofAuthError:
-            response = await self._async_request(
-                "get", url, headers={"Authorization": f"Bearer {self._auth_token}"}
-            )
-        return find_weekly_summary(response)
 
     async def _async_resolve_tokens(self) -> None:
         """Resolve tokens using cached app/auth/refresh tokens or credentials."""
@@ -448,23 +424,3 @@ def parse_certificate_expiry(certificate_b64: str) -> int | None:
     expiry = payload.get("e")
     return int(expiry) if isinstance(expiry, int) else None
 
-
-def find_weekly_summary(payload: Any) -> dict[str, Any] | None:
-    """Find the newest ``WeeklySummary`` object inside a tenjin weekly response."""
-    found: list[dict[str, Any]] = []
-
-    def walk(node: Any) -> None:
-        if isinstance(node, dict):
-            if "totalRides" in node and "totalDistance" in node:
-                found.append(node)
-                return
-            for child in node.values():
-                walk(child)
-        elif isinstance(node, list):
-            for child in node:
-                walk(child)
-
-    walk(payload)
-    if not found:
-        return None
-    return max(found, key=lambda item: str(item.get("startDate", "")))

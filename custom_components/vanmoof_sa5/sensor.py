@@ -24,6 +24,7 @@ from .entity import VanMoofEntity
 @dataclass(frozen=True, kw_only=True)
 class VanMoofSensorDescription(SensorEntityDescription):
     value_fn: Callable[[Any], Any]
+    attributes_fn: Callable[[Any], dict[str, Any]] | None = None
 
 
 SENSORS: tuple[VanMoofSensorDescription, ...] = (
@@ -110,12 +111,6 @@ SENSORS: tuple[VanMoofSensorDescription, ...] = (
         value_fn=lambda state: state.firmware_version,
     ),
     VanMoofSensorDescription(
-        key="update_available",
-        translation_key="update_available",
-        entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda state: state.update_available,
-    ),
-    VanMoofSensorDescription(
         key="find_my_version",
         translation_key="find_my_version",
         entity_category=EntityCategory.DIAGNOSTIC,
@@ -133,46 +128,15 @@ SENSORS: tuple[VanMoofSensorDescription, ...] = (
         key="errors",
         translation_key="errors",
         entity_category=EntityCategory.DIAGNOSTIC,
-        value_fn=lambda state: state.errors,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda state: state.error_count,
+        attributes_fn=lambda state: {
+            "bike_errors": state.bike_errors,
+            "connection_error": state.errors,
+        },
     ),
 )
 
-
-@dataclass(frozen=True, kw_only=True)
-class VanMoofWeeklySensorDescription(SensorEntityDescription):
-    """Sensor fed by the weekly ride summary of the VanMoof cloud."""
-
-    value_fn: Callable[[dict[str, Any]], Any]
-
-
-WEEKLY_SENSORS: tuple[VanMoofWeeklySensorDescription, ...] = (
-    VanMoofWeeklySensorDescription(
-        key="weekly_rides",
-        translation_key="weekly_rides",
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda weekly: weekly.get("totalRides"),
-    ),
-    VanMoofWeeklySensorDescription(
-        key="weekly_distance",
-        translation_key="weekly_distance",
-        native_unit_of_measurement=UnitOfLength.KILOMETERS,
-        device_class=SensorDeviceClass.DISTANCE,
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda weekly: _round(weekly.get("totalDistance")),
-    ),
-    VanMoofWeeklySensorDescription(
-        key="weekly_average_distance",
-        translation_key="weekly_average_distance",
-        native_unit_of_measurement=UnitOfLength.KILOMETERS,
-        device_class=SensorDeviceClass.DISTANCE,
-        state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda weekly: _round(weekly.get("averageDistance")),
-    ),
-)
-
-
-def _round(value: Any) -> float | None:
-    return round(float(value), 2) if isinstance(value, int | float) else None
 
 
 async def async_setup_entry(
@@ -184,10 +148,6 @@ async def async_setup_entry(
     entities: list[SensorEntity] = []
     for bike_id in coordinator.data.bikes:
         entities.extend(VanMoofSensor(coordinator, bike_id, description) for description in SENSORS)
-        entities.extend(
-            VanMoofWeeklySensor(coordinator, bike_id, description)
-            for description in WEEKLY_SENSORS
-        )
     async_add_entities(entities)
 
 
@@ -211,43 +171,14 @@ class VanMoofSensor(VanMoofEntity, SensorEntity):
         return self.entity_description.value_fn(self.bike_state)
 
     @property
+    def extra_state_attributes(self) -> dict[str, Any] | None:
+        if self.entity_description.attributes_fn is None:
+            return None
+        return self.entity_description.attributes_fn(self.bike_state)
+
+    @property
     def available(self) -> bool:
         if self.entity_description.key in ("connection_state", "last_seen", "errors"):
             return True
         return self.bike_state.available
 
-
-class VanMoofWeeklySensor(VanMoofEntity, SensorEntity):
-    """Weekly ride statistics fetched from the VanMoof cloud (not over BLE)."""
-
-    entity_description: VanMoofWeeklySensorDescription
-
-    def __init__(
-        self,
-        coordinator: VanMoofDataUpdateCoordinator,
-        bike_id: str,
-        description: VanMoofWeeklySensorDescription,
-    ) -> None:
-        super().__init__(coordinator, bike_id)
-        self.entity_description = description
-        self._attr_unique_id = f"{bike_id}_{description.key}"
-
-    @property
-    def _weekly(self) -> dict[str, Any] | None:
-        return self.coordinator.data.weekly.get(self._bike_id)
-
-    @property
-    def available(self) -> bool:
-        return self._weekly is not None
-
-    @property
-    def native_value(self) -> Any:
-        weekly = self._weekly
-        return None if weekly is None else self.entity_description.value_fn(weekly)
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any] | None:
-        weekly = self._weekly
-        if weekly is None:
-            return None
-        return {"week_start": weekly.get("startDate"), "summary": weekly}

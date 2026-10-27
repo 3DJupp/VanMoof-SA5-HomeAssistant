@@ -92,20 +92,8 @@
       "firmware_version": {
         "name": "Firmwareversie"
       },
-      "update_available": {
-        "name": "Update beschikbaar"
-      },
       "find_my_version": {
         "name": "Find My-versie"
-      },
-      "weekly_rides": {
-        "name": "Ritten deze week"
-      },
-      "weekly_distance": {
-        "name": "Afstand deze week"
-      },
-      "weekly_average_distance": {
-        "name": "Gem. ritafstand deze week"
       }
     },
     "binary_sensor": {
@@ -201,6 +189,11 @@
       },
       "touch_unlock": {
         "name": "Touch unlock"
+      }
+    },
+    "update": {
+      "firmware": {
+        "name": "Firmware"
       }
     }
   }

@@ -8,8 +8,9 @@ Home Assistant integration for the VanMoof S/A5 e-bike series. This custom integ
 
 **Sensors**
 - Battery and module battery, total distance, bike state (off / standby / on), lock state
-- Region and speed limit, firmware version, firmware update available
-- Weekly ride statistics from the VanMoof cloud (rides, distance, average distance)
+- Region and speed limit, firmware version
+- Firmware update entity: shows when the bike reports a newer firmware (install it with the VanMoof app)
+- Error count with the error map reported by the bike as attributes
 
 **Controls**
 - **Unlock** the bike (code protected, see below; the bike can only be locked with its own button)
@@ -32,7 +33,6 @@ Not exposed on purpose: the backup code and firmware flashing.
 ### Notes
 
 - The bike does not report the touch unlock setting. Home Assistant remembers the last value you set.
-- Ride statistics come from the VanMoof cloud and refresh every 6 hours. Their units are not documented by VanMoof; the raw summary is available as an attribute.
 - Protocol details: [docs/PROTOCOL.md](docs/PROTOCOL.md)
 - Only SA5/A5 bikes are supported. The S6 uses a different Bluetooth service.
 

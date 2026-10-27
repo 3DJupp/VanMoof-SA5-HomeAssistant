@@ -36,6 +36,8 @@ class VanMoofLock(VanMoofEntity, LockEntity):
 
     _attr_translation_key = "lock"
     _attr_entity_registry_enabled_default = False
+    # Hidden so it does not show up in area and auto-generated dashboards.
+    _attr_entity_registry_visible_default = False
 
     def __init__(self, coordinator: VanMoofDataUpdateCoordinator, bike_id: str) -> None:
         super().__init__(coordinator, bike_id)

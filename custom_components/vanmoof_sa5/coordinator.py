@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import timedelta
-from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
@@ -15,12 +14,11 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from homeassistant.util import dt as dt_util
 
 from .api import VanMoofApiClient, VanMoofApiError
-from .ble import VanMoofBikeBleClient, VanMoofBleError
+from .ble import VanMoofBikeBleClient, VanMoofBleConnectError, VanMoofBleError
 from .const import (
     CONF_POLL_INTERVAL,
     DEFAULT_POLL_INTERVAL,
     DOMAIN,
-    WEEKLY_REFRESH_SECONDS,
 )
 from .models import BikeState, VanMoofBike
 from .protocol import BleWrite, write_touch_unlock
@@ -30,13 +28,20 @@ _LOGGER = logging.getLogger(__name__)
 DEFAULT_TOUCH_UNLOCK_DISTANCE = "average"
 
 
+def _connection_state_for(err: VanMoofBleError) -> str:
+    if isinstance(err, VanMoofBleConnectError):
+        return "unreachable"
+    if "No nearby VanMoof BLE advertisements were found" in str(err):
+        return "out_of_range"
+    return "error"
+
+
 @dataclass(slots=True)
 class VanMoofCoordinatorData:
     """Coordinator payload."""
 
     bikes: dict[str, VanMoofBike]
     states: dict[str, BikeState]
-    weekly: dict[str, dict[str, Any]] = field(default_factory=dict)
 
 
 @dataclass(slots=True)
@@ -60,8 +65,6 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
         self.api = api
         self.touch_unlock: dict[str, TouchUnlockSettings] = {}
         self._ble_locks: dict[str, asyncio.Lock] = {}
-        self._weekly: dict[str, dict[str, Any]] = {}
-        self._weekly_fetched: dict[str, float] = {}
         super().__init__(
             hass,
             _LOGGER,
@@ -100,37 +103,16 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
                 state = BikeState(
                     available=False,
                     in_range=False,
-                    connection_state=(
-                        "out_of_range"
-                        if "No nearby VanMoof BLE advertisements were found" in str(err)
-                        else "error"
-                    ),
+                    connection_state=_connection_state_for(err),
                     errors=str(err),
                 )
                 state.carry_over(previous_state)
                 states[bike.unique_id] = state
 
-            await self._async_refresh_weekly(bike)
-
         self.hass.async_create_task(self._async_persist_entry())
         return VanMoofCoordinatorData(
-            bikes=dict(self.api.bikes), states=states, weekly=dict(self._weekly)
+            bikes=dict(self.api.bikes), states=states
         )
-
-    async def _async_refresh_weekly(self, bike: VanMoofBike) -> None:
-        """Refresh the weekly ride summary from the VanMoof cloud (rarely)."""
-        loop_time = self.hass.loop.time()
-        last = self._weekly_fetched.get(bike.unique_id)
-        if last is not None and loop_time - last < WEEKLY_REFRESH_SECONDS:
-            return
-        self._weekly_fetched[bike.unique_id] = loop_time
-        try:
-            summary = await self.api.async_get_weekly_summary(bike)
-        except VanMoofApiError as err:
-            _LOGGER.debug("Could not fetch weekly rides for %s: %s", bike.unique_id, err)
-            return
-        if summary:
-            self._weekly[bike.unique_id] = summary
 
     async def _async_persist_entry(self) -> None:
         new_data = self.api.export_entry_data()
@@ -167,7 +149,7 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
             states[bike_id] = state
             self.async_set_updated_data(
                 VanMoofCoordinatorData(
-                    bikes=dict(self.api.bikes), states=states, weekly=dict(self._weekly)
+                    bikes=dict(self.api.bikes), states=states
                 )
             )
 

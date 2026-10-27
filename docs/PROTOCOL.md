@@ -52,7 +52,7 @@ Application message: `[payload type][body]`
 | 123 | brake light mode | bool |
 | 125 | indicator light mode | bool |
 | 161 | **lock state** | 1 locked, 2 unlocking, 3 unlocked |
-| 165 | total distance | raw / 10 km |
+| 165 | total distance | raw / 100 km (units of 10 m) |
 | 192 | Find My versions | map `{fw: u32, findMy: u32}`, packed `major.minor.build` |
 | 225 | Find My state | map `{provisioned, ready, enabled, pairing, paired}` |
 | 255 | error map | map |
