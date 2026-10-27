@@ -11,7 +11,7 @@ pytest.importorskip("bleak")
 pytest.importorskip("bleak_retry_connector")
 
 from custom_components.vanmoof_sa5 import ble as ble_module  # noqa: E402
-from custom_components.vanmoof_sa5.api import _generate_ed25519_keypair, find_weekly_summary  # noqa: E402
+from custom_components.vanmoof_sa5.api import _generate_ed25519_keypair  # noqa: E402
 from custom_components.vanmoof_sa5.cbor import decode_cbor, encode_cbor  # noqa: E402
 from custom_components.vanmoof_sa5.models import BikeState, VanMoofBike  # noqa: E402
 from custom_components.vanmoof_sa5.protocol import (  # noqa: E402
@@ -45,7 +45,7 @@ class FakeBike:
             Topic.ALARM_MODE: False,
             Topic.BRAKE_LIGHT: True,
             Topic.FIRMWARE_VERSION: "1.2.3",
-            Topic.FW_INFO: {"fw": 1, "findMy": (1 << 24) | (4 << 16) | 77},
+            Topic.FW_INFO: {"fw": 1, "findmy": (1 << 24) | (4 << 16) | 77},
             Topic.FIND_MY: {"provisioned": True, "ready": True, "enabled": False,
                             "pairing": False, "paired": True},
         }
@@ -156,7 +156,7 @@ def test_fetch_state_maps_all_topics(bike_env):
     assert state.battery_level == 87
     assert state.locked is True and state.lock_state == "locked"
     assert state.bike_state == "standby"
-    assert state.distance_km == 1234.5
+    assert state.distance_km == 123.5
     assert state.power_level == "2" and state.light_mode == "auto"
     assert state.bell_sound == "vanmoof" and state.region == "eu"
     assert state.speed_limit == "25 km/h"
@@ -206,15 +206,3 @@ def test_state_carry_over_keeps_settings_when_offline():
     online.carry_over(previous)
     assert online.power_level == "3" and online.locked is None  # live values not carried
 
-
-def test_weekly_summary_is_found_in_nested_document():
-    payload = {"carousel": {"items": []}, "section": [
-        {"type": "header"},
-        {"type": "summary", "data": {"startDate": "2026-10-19", "totalRides": 5,
-                                     "totalDistance": 42.5, "averageDistance": 8.5}},
-        {"type": "summary", "data": {"startDate": "2026-10-12", "totalRides": 2,
-                                     "totalDistance": 10.0, "averageDistance": 5.0}},
-    ]}
-    summary = find_weekly_summary(payload)
-    assert summary["totalRides"] == 5
-    assert find_weekly_summary({"section": []}) is None

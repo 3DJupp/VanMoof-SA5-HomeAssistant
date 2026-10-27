@@ -408,6 +408,12 @@ class VanMoofBikeBleClient:
         update = topics.get(Topic.UPDATE_AVAILABLE)
         firmware = topics.get(Topic.FIRMWARE_VERSION)
         calories = topics.get(Topic.CALORIES)
+        raw_errors = topics.get(Topic.ERRORS)
+        bike_errors = (
+            {str(key): value for key, value in raw_errors.items()}
+            if isinstance(raw_errors, dict)
+            else {}
+        )
 
         return BikeState(
             available=True,
@@ -417,8 +423,8 @@ class VanMoofBikeBleClient:
             lock_state=LOCK_STATES.get(lock_raw),
             locked=None if lock_raw not in LOCK_STATES else lock_raw == 1,
             bike_state=_map_bike_state(topics.get(Topic.BIKE_STATE)),
-            # The app divides the raw value by 10 to get total kilometres.
-            distance_km=None if distance is None else round(distance / 10.0, 1),
+            # The raw value is in units of 10 m (raw / 100 = km).
+            distance_km=None if distance is None else round(distance / 100.0, 1),
             speed_kmh=None if speed is None else round(speed / 100.0, 1),
             calories=float(calories) if isinstance(calories, int | float) else None,
             power_level=POWER_LEVEL_OPTIONS.get(_as_int(topics.get(Topic.POWER_LEVEL))),
@@ -437,7 +443,8 @@ class VanMoofBikeBleClient:
             find_my_state=_map_find_my_state(find_my),
             connection_state="connected",
             firmware_info=_stringify_value(fw_info),
-            errors=_stringify_value(topics.get(Topic.ERRORS)),
+            bike_errors=bike_errors,
+            error_count=_count_errors(bike_errors),
             raw_topics=topics,
         )
 
@@ -460,7 +467,16 @@ def _map_bike_state(value: object | None) -> str | None:
 def _map_find_my_version(value: object | None) -> str | None:
     if not isinstance(value, dict):
         return None
-    return decode_packed_version(value.get("findMy"))
+    # Firmware versions differ in the key spelling ("findMy" or "findmy").
+    for key, item in value.items():
+        if str(key).lower() == "findmy":
+            return decode_packed_version(item)
+    return None
+
+
+def _count_errors(errors: dict[str, Any]) -> int:
+    """Count active entries; zero, false and empty values mean no error."""
+    return sum(1 for value in errors.values() if value not in (None, False, 0, "", [], {}))
 
 
 def _map_find_my_state(value: object | None) -> dict[str, bool] | None:

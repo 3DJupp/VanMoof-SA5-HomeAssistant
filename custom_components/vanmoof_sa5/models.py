@@ -64,7 +64,11 @@ class BikeState:
     connection_state: str = "disconnected"
     last_seen: datetime | None = None
     firmware_info: str | None = None
+    # Last connection error (None after a successful poll).
     errors: str | None = None
+    # Error map reported by the bike (topic 255) and the number of active errors.
+    bike_errors: dict[str, Any] | None = None
+    error_count: int | None = None
     raw_topics: dict[int, Any] = field(default_factory=dict)
 
     # Settings the bike only reports on connect. They are carried over from
@@ -84,7 +88,16 @@ class BikeState:
         "firmware_version",
     )
     # Live values that are only carried over when the bike is unreachable.
-    LIVE_FIELDS = ("locked", "lock_state", "bike_state", "distance_km", "last_seen")
+    LIVE_FIELDS = (
+        "locked",
+        "lock_state",
+        "bike_state",
+        "distance_km",
+        "last_seen",
+        "bike_errors",
+        "error_count",
+        "find_my_version",
+    )
 
     def carry_over(self, previous: BikeState | None) -> None:
         """Fill missing fields from ``previous``."""

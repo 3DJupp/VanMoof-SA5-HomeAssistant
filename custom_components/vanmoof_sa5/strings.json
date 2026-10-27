@@ -86,20 +86,8 @@
       "firmware_version": {
         "name": "Firmware version"
       },
-      "update_available": {
-        "name": "Update available"
-      },
       "find_my_version": {
         "name": "Find My version"
-      },
-      "weekly_rides": {
-        "name": "Rides this week"
-      },
-      "weekly_distance": {
-        "name": "Distance this week"
-      },
-      "weekly_average_distance": {
-        "name": "Average ride distance this week"
       }
     },
     "binary_sensor": {
@@ -195,6 +183,11 @@
       },
       "touch_unlock": {
         "name": "Touch unlock"
+      }
+    },
+    "update": {
+      "firmware": {
+        "name": "Firmware"
       }
     }
   }
