@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import timedelta
 
 from homeassistant.components import bluetooth
@@ -178,11 +178,9 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
                 self.hass, bike.ble_address, connectable=False
             ):
                 # Bike is away: do not connect, its next advertisement triggers a refresh
-                state = BikeState(
-                    available=False, in_range=False, connection_state="out_of_range"
+                states[bike.unique_id] = self._stale_state(
+                    previous_state, connection_state="out_of_range"
                 )
-                state.carry_over(previous_state)
-                states[bike.unique_id] = state
                 continue
 
             try:
@@ -197,18 +195,39 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
                 state.carry_over(previous_state)
                 states[bike.unique_id] = state
             except VanMoofBleError as err:
-                state = BikeState(
-                    available=False,
-                    in_range=False,
+                states[bike.unique_id] = self._stale_state(
+                    previous_state,
                     connection_state=_connection_state_for(err),
                     errors=str(err),
                 )
-                state.carry_over(previous_state)
-                states[bike.unique_id] = state
 
         self.hass.async_create_task(self._async_persist_entry())
         return VanMoofCoordinatorData(
             bikes=dict(self.api.bikes), states=states
+        )
+
+    @staticmethod
+    def _stale_state(
+        previous_state: BikeState | None,
+        *,
+        connection_state: str,
+        errors: str | None = None,
+    ) -> BikeState:
+        """Return the last known state, marked as not freshly fetched."""
+        if previous_state is None or not previous_state.available:
+            state = BikeState(
+                available=False,
+                in_range=False,
+                connection_state=connection_state,
+                errors=errors,
+            )
+            state.carry_over(previous_state)
+            return state
+        return replace(
+            previous_state,
+            in_range=connection_state != "out_of_range",
+            connection_state=connection_state,
+            errors=errors if errors is not None else previous_state.errors,
         )
 
     async def _async_persist_entry(self) -> None:

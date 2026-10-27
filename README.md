@@ -33,6 +33,7 @@ Not exposed on purpose: the backup code and firmware flashing.
 
 ### Notes
 
+- While the bike is away or a connection fails, the entities keep their last known values instead of turning unavailable. The "In range", "Connection state" and "Last seen" entities show whether the values are current.
 - The bike does not report the touch unlock setting. Home Assistant remembers the last value you set.
 - Protocol details: [docs/PROTOCOL.md](docs/PROTOCOL.md)
 - Only SA5/A5 bikes are supported. The S6 uses a different Bluetooth service.
