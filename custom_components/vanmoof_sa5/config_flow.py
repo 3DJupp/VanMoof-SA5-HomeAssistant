@@ -93,15 +93,23 @@ class VanMoofConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry):
-        return VanMoofOptionsFlow()
+        return VanMoofOptionsFlow(config_entry)
 
 
 class VanMoofOptionsFlow(config_entries.OptionsFlow):
     """Handle VanMoof SA5 options."""
 
+    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
+        # Kept under a private name: ``config_entry`` is a read-only property
+        # on newer Home Assistant versions and missing on older ones.
+        self._entry = config_entry
+
     async def async_step_init(self, user_input: dict[str, Any] | None = None):
+        options = self._entry.options
         if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
+            data = dict(user_input)
+            data[CONF_UNLOCK_CODE] = str(data.get(CONF_UNLOCK_CODE) or "").strip()
+            return self.async_create_entry(title="", data=data)
 
         return self.async_show_form(
             step_id="init",
@@ -109,13 +117,13 @@ class VanMoofOptionsFlow(config_entries.OptionsFlow):
                 {
                     vol.Optional(
                         CONF_POLL_INTERVAL,
-                        default=self.config_entry.options.get(
-                            CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL
-                        ),
+                        default=int(options.get(CONF_POLL_INTERVAL, DEFAULT_POLL_INTERVAL)),
                     ): vol.All(vol.Coerce(int), vol.Range(min=60, max=3600)),
                     vol.Optional(
                         CONF_UNLOCK_CODE,
-                        default=self.config_entry.options.get(CONF_UNLOCK_CODE, ""),
+                        description={
+                            "suggested_value": str(options.get(CONF_UNLOCK_CODE) or "")
+                        },
                     ): str,
                 }
             ),

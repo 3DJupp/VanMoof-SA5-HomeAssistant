@@ -36,6 +36,8 @@ SWITCHES: tuple[VanMoofSwitchDescription, ...] = (
     VanMoofSwitchDescription(
         key="alarm",
         translation_key="alarm",
+        # Hidden so it does not show up in area and auto-generated dashboards.
+        entity_registry_visible_default=False,
         value_fn=lambda state: state.alarm_enabled,
         write_fn=write_alarm_mode,
     ),
