@@ -8,6 +8,7 @@ Home Assistant integration for the VanMoof S/A5 e-bike series. This custom integ
 
 **Sensors**
 - Battery and module battery, total distance, bike state (off / standby / on), lock state
+- Find My status (diagnostic binary sensor, with the ready / paired / pairing / provisioned flags as attributes)
 - Region and speed limit, firmware version
 - Firmware update entity: shows when the bike reports a newer firmware (install it with the VanMoof app)
 - Error count with the error map reported by the bike as attributes
@@ -21,6 +22,7 @@ Home Assistant integration for the VanMoof S/A5 e-bike series. This custom integ
 **Connection**
 - Works with local Bluetooth adapters and ESPHome Bluetooth proxies through the Home Assistant Bluetooth stack
 - Every command connects, authenticates, applies the change and reads the new state back
+- Passive presence detection: "In range" follows the bike's advertisements in real time, without connecting. While the bike is away the integration does not scan or connect, and it refreshes as soon as the bike comes back
 
 Disabled by default (enable them in the entity settings):
 - `lock` entity: unlocking only works after you set an **unlock code** in the integration options, and the code is required on every `lock.unlock` call.
@@ -32,9 +34,14 @@ Not exposed on purpose: the backup code and firmware flashing.
 
 ### Notes
 
+- While the bike is away or a connection fails, the entities keep their last known values instead of turning unavailable. The "In range", "Connection state" and "Last seen" entities show whether the values are current.
 - The bike does not report the touch unlock setting. Home Assistant remembers the last value you set.
 - Protocol details: [docs/PROTOCOL.md](docs/PROTOCOL.md)
 - Only SA5/A5 bikes are supported. The S6 uses a different Bluetooth service.
+
+### Diagnostics
+
+Under **Settings → Devices & Services → VanMoof SA5 → ⋮ → Download diagnostics** you get a JSON file with the last fetched state and all raw topic values the bike sent. E-mail, password, tokens, certificates, keys, frame/serial numbers and the BLE address are redacted. This is useful to verify value mappings on other models or firmware versions.
 
 ### Security
 

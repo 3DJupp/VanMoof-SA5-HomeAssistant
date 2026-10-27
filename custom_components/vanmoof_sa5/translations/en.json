@@ -100,6 +100,15 @@
       "locked": {
         "name": "Locked"
       },
+      "find_my": {
+        "name": "Find My",
+        "state_attributes": {
+          "ready": { "name": "Ready" },
+          "paired": { "name": "Paired" },
+          "pairing": { "name": "Pairing" },
+          "provisioned": { "name": "Provisioned" }
+        }
+      },
       "in_range": {
         "name": "In range"
       }

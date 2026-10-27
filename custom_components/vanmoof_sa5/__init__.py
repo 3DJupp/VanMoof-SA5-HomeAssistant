@@ -13,6 +13,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     api = await async_bootstrap_client(hass, dict(entry.data))
     coordinator = VanMoofDataUpdateCoordinator(hass, entry, api)
     await coordinator.async_config_entry_first_refresh()
+    coordinator.async_start_presence_tracking()
     hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
     await hass.config_entries.async_forward_entry_setups(
         entry, [Platform(platform) for platform in PLATFORMS]
@@ -39,4 +40,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def async_reload_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Reload the entry when options change."""
+    coordinator: VanMoofDataUpdateCoordinator = hass.data[DOMAIN][entry.entry_id]
+    # Token and certificate updates also change entry.data; those need no reload
+    if dict(entry.options) == coordinator.options:
+        return
     await hass.config_entries.async_reload(entry.entry_id)
