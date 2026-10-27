@@ -70,6 +70,7 @@ class VanMoofDataUpdateCoordinator(DataUpdateCoordinator[VanMoofCoordinatorData]
     ) -> None:
         self.entry = entry
         self.api = api
+        self.options = dict(entry.options)
         self.touch_unlock: dict[str, TouchUnlockSettings] = {}
         self._ble_locks: dict[str, asyncio.Lock] = {}
         self._tracked_addresses: set[str] = set()
